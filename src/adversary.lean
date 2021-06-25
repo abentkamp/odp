@@ -18,17 +18,64 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 
 def adversary := Π (outputs : list O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ
 
-variables (𝒜 : adversary P O X)
+variables {P} {O} {X} (𝒜 : adversary P O X)
 
 open_locale matrix
 open matrix
 
-noncomputable def odp_composition (bit : bool) : Π (outputs : list O) (ε δ : ℝ≥0∞) (n : ℕ) (ω : fin n → Ω), fin n → O
-| outputs ε δ 0 ω := ![]
-| outputs ε δ (m + 1) ω := 
-  let 𝒜_choice := 𝒜 outputs ε δ in 
-  let output := 𝒜_choice.M (𝒜_choice.x bit) (ω 0) in
-  let outputs := list.cons output outputs in
-  let ε := ε - 1 in --TODO compute real epsilon
-  let δ := δ - 1 in --TODO compute real delta
-  fin.cons output (odp_composition outputs ε δ m (vec_tail ω))
+noncomputable def odp_composition_aux (bit : bool) : 
+  Π (acc : list O) (ε δ : ℝ≥0∞) (ω : list Ω), list O
+| acc ε δ [] := acc
+| acc ε δ (ω :: ωs) := 
+  let 𝒜_choice := 𝒜 acc ε δ in 
+  let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
+  let acc := acc ++ [o] in
+  let ε := ε - εusage 𝒜_choice.odp_partition o in
+  let δ := δ - δusage 𝒜_choice.odp_partition o in
+  odp_composition_aux acc ε δ ωs
+
+noncomputable def odp_composition (bit : bool) : Π (ε δ : ℝ≥0∞) (ωs : list Ω), list O := 
+odp_composition_aux 𝒜 bit []
+
+variables (bit : bool) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (ω : Ω)(ωs : list Ω)
+
+lemma append_odp_composition_aux : 
+  acc₁ ++ (odp_composition_aux (λ os, 𝒜 (acc₁ ++ os)) bit acc₂ ε δ ωs)
+  = odp_composition_aux 𝒜 bit (acc₁ ++ acc₂) ε δ ωs :=
+begin
+  induction ωs generalizing acc₂ ε δ,
+  { simp [odp_composition_aux] },
+  { unfold odp_composition_aux,
+    simp [ωs_ih] }
+end
+
+lemma append_odp_composition_aux' : 
+  acc ++ (odp_composition_aux (λ os, 𝒜 (acc ++ os)) bit [] ε δ ωs) 
+    = odp_composition_aux 𝒜 bit acc ε δ ωs :=
+by simp [append_odp_composition_aux 𝒜 bit acc [] ε δ ωs]
+
+lemma cons_odp_composition_aux : 
+  o :: (odp_composition_aux (λ os, 𝒜 (o :: os)) bit [] ε δ ωs) 
+    = odp_composition_aux 𝒜 bit [o] ε δ ωs :=
+by {rw ←append_odp_composition_aux' 𝒜 bit [o] ε δ ωs, simp}
+
+lemma odp_composition_nil : 
+  odp_composition 𝒜 bit ε δ [] = [] := rfl
+
+lemma odp_composition_cons : 
+  odp_composition 𝒜 bit ε δ (ω :: ωs) = 
+  let 𝒜_choice := 𝒜 [] ε δ in 
+  let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
+  let ε' := ε - εusage 𝒜_choice.odp_partition o in
+  let δ' := δ - δusage 𝒜_choice.odp_partition o in
+  let 𝒜' := (λ os, 𝒜 (o :: os)) in
+  o :: odp_composition 𝒜' bit ε' δ' ωs := 
+by simp [odp_composition, odp_composition_aux, cons_odp_composition_aux]
+
+lemma length_odp_composition : 
+  (odp_composition 𝒜 bit ε δ ωs).length = ωs.length :=
+begin
+  induction ωs generalizing 𝒜 ε δ,
+  { refl },
+  { simp [odp_composition_cons, ωs_ih] }
+end

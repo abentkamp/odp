@@ -38,15 +38,17 @@ structure odp_partition :=
 open_locale classical
 noncomputable theory
 
+variables {P} {M}
+
 def odb_index (p : odp_partition P M) (o : O) : option p.index := 
   if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
 
-def εusage (p : odp_partition P M) (o : O) := match odb_index P M p o with
+def εusage (p : odp_partition P M) (o : O) := match odb_index p o with
 | none := p.ε
 | some i :=  p.ε_for i
 end
 
-def δusage (p : odp_partition P M) (o : O) := match odb_index P M p o with
+def δusage (p : odp_partition P M) (o : O) := match odb_index p o with
 | none := p.δ
 | some i := 0
 end
