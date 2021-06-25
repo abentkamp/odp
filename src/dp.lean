@@ -16,3 +16,17 @@ variables (ε δ : ℝ≥0∞)
 def diff_private :=
   ∀ (x y : X) (s : set O), neighboring x y → 
   P {ω : Ω | M x ω ∈ s} ≤ exp ε * P {ω : Ω | M y ω ∈ s} + δ
+
+def output_diff_private (s : set O) :=
+  ∀ (x y : X) (t : set O) (hs : t ⊆ s), neighboring x y → 
+  P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t}
+
+structure odp_partition :=
+(ε δ : ℝ≥0∞)
+(index : Type*) 
+[encodable : encodable index] 
+(partition : index → set O) 
+(ε_for : index → ℝ≥0∞)
+(disjoint : pairwise (disjoint on partition))  
+(dp : diff_private P M ε δ)
+(odp : ∀ i, output_diff_private P M (ε_for i) (partition i))
