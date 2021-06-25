@@ -17,7 +17,7 @@ variables (ε δ : ℝ≥0∞)
 
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
-    (ε - εusage P₁ M₁ p o₁) (δ - δusage P₁ M₁ p o₁))
+    (ε - εusage p o₁) (δ - δusage p o₁))
 
 local infix ` ⊗ `:50  := measure.prod
 
