@@ -104,13 +104,10 @@ noncomputable def odp_composition (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (�
 cast (by rw [length_odp_composition₀, fin.length_to_list]) 
   (odp_composition₀ 𝒜 bit ε δ (fin.to_list ωs)).to_fin
 
-infix ` ^^ `:50 := λ (μ : measure_theory.measure _) (n : ℕ), 
+local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ), 
   measure.pi (λ i : fin n, μ)
 
-theorem main (n : ℕ) :
-diff_private_aux (P ^^ n)
-  (λ ω, odp_composition 𝒜 n ff ε δ)
-  (λ ω, odp_composition 𝒜 n tt ε δ) ε δ := sorry
+local infix ` ⊗ `:50  := measure.prod
 
 -- TODO: move
 lemma measure.pi_eq_pi' {ι : Type*} {α : ι → Type*} [fintype ι] [encodable ι]
@@ -123,7 +120,8 @@ end
 
 open finset
 
-lemma measure.pi_succ {n : ℕ} {α : fin n.succ → Type*} [∀ i, measurable_space (α i)] 
+-- TODO: move?
+lemma measure.pi_succ {n : ℕ} (α : fin n.succ → Type) [∀ i, measurable_space (α i)] 
   (μ : Π (i : fin n.succ), measure (α i)) [∀ i, sigma_finite (μ i)] : 
   measure.pi (λ i, μ i) = 
     measure.map (λ x : α 0 × Π (i : fin n), α i.succ, fin.cons x.1 x.2)
@@ -189,4 +187,26 @@ begin
   { unfold measurable,
     intros t ht, sorry},
   { apply measurable_set.univ_pi_fintype, intro h, apply hs },
+end
+
+theorem main (n : ℕ) :
+diff_private_aux (P ^^ n)
+  (odp_composition 𝒜 n ff ε δ)
+  (odp_composition 𝒜 n tt ε δ) ε δ :=
+begin
+  cases n,
+  { sorry },
+  { simp only,
+    rw [measure.pi_succ (λ i, Ω) (λ i, P)],
+    unfold diff_private_aux,
+    intro s,
+    rw [measure.map_apply, measure.map_apply],
+    rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
+    revert s,
+    change diff_private_aux (P ⊗ P ^^ n)
+      (λ x, odp_composition 𝒜 n.succ ff ε δ (fin.cons x.fst x.snd))
+      (λ x, odp_composition 𝒜 n.succ tt ε δ (fin.cons x.fst x.snd)) ε δ,
+
+ -- TODO: use `cons_odp_composition₀_aux` to make `induction_step` from `test4` applicable
+    }
 end
