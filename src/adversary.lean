@@ -88,10 +88,20 @@ def fin.to_list {α : Type*} : Π {n : ℕ} (a : fin n → α), list α
 | 0 a := []
 | (n + 1) a := vec_head a :: fin.to_list (vec_tail a)
 
+lemma fin.to_list_nil {α : Type*} : 
+  fin.to_list ![] = ([] : list α) := rfl
+
+lemma fin.to_list_cons {α : Type*} {n : ℕ} (a : α) (as : fin n → α) : 
+  fin.to_list (vec_cons a as) = a :: fin.to_list as :=
+by induction n; simp [fin.to_list]
+
 -- TODO: move
 def list.to_fin {α : Type*} : Π (l : list α), fin (l.length) → α
 | [] := ![]
 | (x :: xs) := vec_cons x (xs.to_fin)
+
+lemma list.vec_cons_to_fin {α : Type*} (a : α) (l : list α) :
+  vec_cons a l.to_fin = (a :: l).to_fin := rfl
 
 -- TODO: move
 @[simp]
@@ -100,9 +110,38 @@ lemma fin.length_to_list {α : Type*} : ∀ {n : ℕ} (a : fin n → α),
 | 0 a := rfl
 | (n + 1) a := by simp [fin.to_list, fin.length_to_list]
 
+lemma cast_vec_cons {α : Type*} {m n : ℕ} (h : m = n) (a : α) (as : fin m → α) :
+cast (by rw h) (vec_cons a as) = vec_cons a (cast (by rw h) as) :=
+begin
+  subst h,
+  refl,
+end
+
 noncomputable def odp_composition (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : fin n → O := 
 cast (by rw [length_odp_composition₀, fin.length_to_list]) 
   (odp_composition₀ 𝒜 bit ε δ (fin.to_list ωs)).to_fin
+
+lemma odp_composition_zero (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : 
+  odp_composition 𝒜 0 bit ε δ ![] = ![] := rfl
+
+lemma odp_composition_succ (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ω : Ω) (ωs : fin n → Ω) : 
+  odp_composition 𝒜 n.succ bit ε δ (vec_cons ω ωs) = 
+  let 𝒜_choice := 𝒜 [] ε δ in 
+  let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
+  let ε' := ε - εusage 𝒜_choice.odp_partition o in
+  let δ' := δ - δusage 𝒜_choice.odp_partition o in
+  let 𝒜' := (λ os, 𝒜 (o :: os)) in
+  vec_cons o (odp_composition 𝒜' n bit ε' δ' ωs) :=
+begin
+  dunfold odp_composition,
+  have := odp_composition₀_cons 𝒜 bit ε δ ω (fin.to_list ωs),
+  rw [←fin.to_list_cons ω ωs] at this,
+  refine eq.trans _ (cast_vec_cons (by rw [length_odp_composition₀, fin.length_to_list]) _ _),
+  rw list.vec_cons_to_fin,
+  congr',
+  rw [length_odp_composition₀, fin.length_to_list],
+  rw [length_odp_composition₀, fin.length_to_list]
+end
 
 local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ), 
   measure.pi (λ i : fin n, μ)
@@ -204,9 +243,9 @@ begin
     rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
     revert s,
     change diff_private_aux (P ⊗ P ^^ n)
-      (λ x, odp_composition 𝒜 n.succ ff ε δ (fin.cons x.fst x.snd))
-      (λ x, odp_composition 𝒜 n.succ tt ε δ (fin.cons x.fst x.snd)) ε δ,
-
- -- TODO: use `cons_odp_composition₀_aux` to make `induction_step` from `test4` applicable
+      (λ x, odp_composition 𝒜 n.succ ff ε δ (vec_cons x.fst x.snd))
+      (λ x, odp_composition 𝒜 n.succ tt ε δ (vec_cons x.fst x.snd)) ε δ,
+    simp only [odp_composition_succ],
+ -- TODO: use `odp_composition_succ` to make `induction_step` from `test4` applicable
     }
 end
