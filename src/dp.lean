@@ -7,9 +7,9 @@ class database_type (X : Type*) :=
 open measure_theory ennreal database_type
 open_locale ennreal
 
-variables {Ω : Type} [measurable_space Ω] (P : measure Ω) {O : Type} [measurable_space O]
+variables {Ω : Type} [measurable_space Ω] (P : measure Ω) {O : Type} {O' : Type}
 
-variables {X : Type} [database_type X] (M : X → Ω → O) (M₀ : Ω → O) (M₁ : Ω → O)
+variables {X : Type} [database_type X] (M : X → Ω → O) (M₀ : Ω → O) (M₁ : Ω → O) (M₀' : Ω → O') (M₁' : Ω → O')
 
 variables (ε δ : ℝ≥0∞)
 
@@ -29,7 +29,7 @@ structure odp_partition :=
 (ε δ : ℝ≥0∞)
 (index : Type*) 
 [encodable : encodable index] 
-(partition : index → set O) 
+(partition : index → set O)
 (ε_for : index → ℝ≥0∞)
 (disjoint : pairwise (disjoint on partition))  
 (dp : diff_private P M ε δ)
@@ -53,3 +53,10 @@ def δusage (p : odp_partition P M) (o : O) := match odb_index p o with
 | some i := 0
 end
 
+
+lemma diff_private_aux_map_inj (f : O → O') (hf : function.injective f) : diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
+begin
+  intros h s,
+  rw [←set.preimage_image_eq s hf],
+  exact h (f '' s)
+end

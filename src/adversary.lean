@@ -227,25 +227,3 @@ begin
     intros t ht, sorry},
   { apply measurable_set.univ_pi_fintype, intro h, apply hs },
 end
-
-theorem main (n : ℕ) :
-diff_private_aux (P ^^ n)
-  (odp_composition 𝒜 n ff ε δ)
-  (odp_composition 𝒜 n tt ε δ) ε δ :=
-begin
-  cases n,
-  { sorry },
-  { simp only,
-    rw [measure.pi_succ (λ i, Ω) (λ i, P)],
-    unfold diff_private_aux,
-    intro s,
-    rw [measure.map_apply, measure.map_apply],
-    rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
-    revert s,
-    change diff_private_aux (P ⊗ P ^^ n)
-      (λ x, odp_composition 𝒜 n.succ ff ε δ (vec_cons x.fst x.snd))
-      (λ x, odp_composition 𝒜 n.succ tt ε δ (vec_cons x.fst x.snd)) ε δ,
-    simp only [odp_composition_succ],
- -- TODO: use `odp_composition_succ` to make `induction_step` from `test4` applicable
-    }
-end
