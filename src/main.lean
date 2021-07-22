@@ -1,5 +1,5 @@
 
-import .test4
+import .test4 data.set.basic
 
 open measure_theory ennreal database_type
 open_locale ennreal
@@ -22,13 +22,42 @@ local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ),
 
 local infix ` ⊗ `:50  := measure.prod
 
+instance is_empty_fin_zero : is_empty (fin 0) :=
+is_empty.mk (λ x, nat.not_lt_zero x.1 x.2)
+
+instance subsingleton_fun_is_empty (α β : Type*) [is_empty α] : 
+  subsingleton (α → β) :=
+begin
+  apply subsingleton.intro,
+  intros a b,
+  ext x,
+  apply is_empty.elim _ x,
+  apply_instance,
+end
+
+lemma set.eq_empty_of_subsingleton_of_not_univ {α : Type*} [subsingleton α]
+  (s : set α) (hs : s ≠ set.univ) : s = ∅ :=
+begin
+  apply set.eq_empty_of_subset_empty,
+  intros a ha,
+  apply hs,
+  apply set.eq_univ_iff_forall.2,
+  intro b,
+  rw subsingleton.elim b a,
+  apply ha
+end
+
 theorem main (n : ℕ) :
 diff_private_aux (P ^^ n)
   (odp_composition 𝒜 n ff ε δ)
   (odp_composition 𝒜 n tt ε δ) ε δ :=
 begin
-  cases n,
-  { sorry },
+  induction n with n ih generalizing 𝒜 ε δ,
+  { intro s,
+    by_cases h : s = set.univ,
+    { simp [h], sorry -- This is relatively simple arithmetic
+    },
+    { simp [set.eq_empty_of_subsingleton_of_not_univ s h] }},
   { simp only,
     rw [measure.pi_succ (λ i, Ω) (λ i, P)],
     unfold diff_private_aux,
@@ -41,7 +70,7 @@ begin
       (λ x, odp_composition 𝒜 n.succ tt ε δ (vec_cons x.fst x.snd)) ε δ,
     simp only [odp_composition_succ] {zeta := ff},
     apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
-    sorry,
+    sorry, --injectivity of (vec_head, vec_tail)
     convert induction_step P (P ^^ n) O _ X
       ((𝒜 list.nil ε δ).x ff) ((𝒜 list.nil ε δ).x tt) (λ x ω, (𝒜 [] ε δ).M x ω) _ _ _ (λ o ω,
   let 𝒜_choice : adversary_choice P O X ε δ := 𝒜 list.nil ε δ,
@@ -58,12 +87,17 @@ begin
    simp only [tail_cons, head_cons],
    simp,
    apply (𝒜 _ _ _).odp_partition,
-   { sorry --TODO: use induction hypothesis here
+   { intro o,
+      let 𝒜_choice : adversary_choice P O X ε δ := 𝒜 list.nil ε δ,
+      let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o,
+      let  δ' : ℝ≥0∞ := δ - δusage 𝒜_choice.odp_partition o,
+      let  𝒜' : list O → Π (ε δ : ℝ≥0∞), adversary_choice P O X ε δ := λ (os : list O), 𝒜 (o :: os),
+     exact ih 𝒜' ε' δ',
    },
-   sorry,
-   sorry,
-   sorry,
-   sorry,
-   sorry,
+   sorry, --measurability
+   sorry, --measurability
+   sorry, --measurability
+   sorry, --measurability
+   sorry, --sigma-finiteness
     }
 end

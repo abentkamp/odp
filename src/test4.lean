@@ -5,7 +5,7 @@ open_locale ennreal
 
 variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂] 
 
-variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) 
+variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [sigma_finite P₁] [sigma_finite P₂]
 
 variables (O₁ O₂ : Type) [measurable_space O₁] [measurable_space O₂]
 
@@ -25,4 +25,10 @@ lemma induction_step
     (ε - εusage p o₁) (δ - δusage p o₁)) : 
   diff_private_aux (P₁ ⊗ P₂) 
     (λ ω, prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2))
-    (λ ω, prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2)) ε δ := sorry
+    (λ ω, prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2)) ε δ :=
+λ s,
+calc 
+  (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
+   ∫⁻ (x : Ω₁), P₂ (prod.mk x ⁻¹' {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s}) ∂P₁ : 
+  begin rw measure.prod_apply, sorry end
+... ≤ exp ε * (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} + δ : sorry
