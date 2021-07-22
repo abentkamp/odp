@@ -40,19 +40,41 @@ noncomputable theory
 
 variables {P} {M}
 
-def odb_index (p : odp_partition P M) (o : O) : option p.index := 
+def odp_index (p : odp_partition P M) (o : O) : option p.index := 
   if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
 
-def εusage (p : odp_partition P M) (o : O) := match odb_index p o with
+def εusage (p : odp_partition P M) (o : O) := match odp_index p o with
 | none := p.ε
 | some i :=  p.ε_for i
 end
 
-def δusage (p : odp_partition P M) (o : O) := match odb_index p o with
+def δusage (p : odp_partition P M) (o : O) := match odp_index p o with
 | none := p.δ
 | some i := 0
 end
 
+def odp_set_for (p : odp_partition P M) : option p.index → set O
+| none := set.univ \ ⋃ i, p.partition i
+| (some i) :=  p.partition i
+
+def omega_set_for (p : odp_partition P M) (g : Ω → O) (i : option p.index) : set Ω := g ⁻¹' odp_set_for p i
+
+lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) : o ∈ odp_set_for p (odp_index p o) :=
+begin
+  by_cases h : ∃ (i : p.index), o ∈ p.partition i,
+  { simp only [odp_set_for, odp_index, h, dif_pos],
+    exact classical.some_spec2 (λ i, o ∈ p.partition i) (λ a h, h) },
+  { simp [odp_set_for, odp_index, h, dif_neg] }
+end
+
+lemma union_odp_set_for_eq_univ (p : odp_partition P M) : (⋃ i, odp_set_for p i) = set.univ :=
+begin
+  apply set.eq_univ_of_forall,
+  intros o,
+  apply set.mem_Union.2,
+  use odp_index p o,
+  apply mem_odp_set_for_odp_index
+end
 
 lemma diff_private_aux_map_inj (f : O → O') (hf : function.injective f) : diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
 begin
