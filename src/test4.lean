@@ -5,7 +5,7 @@ open_locale ennreal
 
 variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂] 
 
-variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [sigma_finite P₁] [sigma_finite P₂]
+variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P₁] [probability_measure P₂]
 
 variables (O₁ O₂ : Type) [measurable_space O₁] [measurable_space O₂]
 
@@ -44,10 +44,36 @@ calc s = s ∩ (set.prod univ univ) : by simp
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod univ) : by rw set.Union_prod_const
 ... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod univ : by rw inter_Union
 
+lemma xx (s : set (O₁ × O₂)) 
+  (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
+    (ε - εusage p o₁) (δ - δusage p o₁)):
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} 
+≤ sorry :=
+calc 
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s}  = 
+∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x₁ ω₁, M₂₀ (M₁ x₁ ω₁) ω₂) ∈ s} ∂P₁ : 
+begin
+  rw measure.prod_apply,
+  refl,
+  sorry
+end
+...  ≤ ∫⁻ (ω₁ : Ω₁), (ε - εusage p (M₁ x₁ ω₁)).exp *
+    P₂ {ω : Ω₂ | M₂₁ (M₁ x₁ ω₁) ω ∈ {o₂ : O₂ | (M₁ x₁ ω₁, o₂) ∈ s}} +
+  (δ - δusage p (M₁ x₁ ω₁)) ∂P₁ :
+  begin 
+    apply lintegral_mono,
+    intro ω₁,
+    exact hM₂ (M₁ x₁ ω₁) {o₂ : O₂ | (M₁ x₁ ω₁, o₂) ∈ s},
+ end
+...  = sorry : begin rw lintegral_add,
+    sorry, sorry, sorry end
+...  ≤ sorry : sorry
+
 include x₁ hx
 lemma xxx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ) :
-(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' s)
-= sorry 
+(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2)) ⁻¹' s)
+≤ (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} +
+  δusage_for p i 
 :=
 calc 
 (P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' s)
@@ -67,9 +93,22 @@ calc
     simp_rw [δusage_for, add_zero],
     refine p.odp i x₀ x₁ {o₁ | (o₁, M₂₀ o₁ ω₂) ∈ s} _ hx,
     exact λ o₁ ho₁, (mem_prod.1 (hs ho₁)).1, }, end
+... = (εusage_for p i).exp *
+    ∫⁻ (ω₂ : Ω₂), P₁ {ω₁ : Ω₁ | (M₁ x₁ ω₁, M₂₀ (M₁ x₁ ω₁) ω₂) ∈ s} ∂P₂ +
+  δusage_for p i * P₂ univ :
+begin rw lintegral_add,
+    rw lintegral_const,
+    rw lintegral_const_mul,
+    sorry, sorry, sorry end
+... = (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} +
+  δusage_for p i: 
+begin 
+        rw [← measure.prod_swap, measure.map_apply, measure.prod_apply, measure_univ, mul_one],
+        refl,
+    sorry, sorry, sorry
+        end
 ... = sorry : sorry
 
--- need mu+ trick to reduce δusage
 
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
