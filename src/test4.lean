@@ -44,6 +44,33 @@ calc s = s ∩ (set.prod univ univ) : by simp
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod univ) : by rw set.Union_prod_const
 ... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod univ : by rw inter_Union
 
+include x₁ hx
+lemma xxx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ) :
+(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' s)
+= sorry 
+:=
+calc 
+(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' s)
+= ∫⁻ (ω₂ : Ω₂), P₁ ((λ (ω₁ : Ω₁), (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂)) ⁻¹' s) ∂P₂ : 
+       begin 
+        rw [← measure.prod_swap, measure.map_apply, measure.prod_apply], 
+        simp only [preimage_preimage], 
+        refl,
+        sorry,
+        sorry,
+        sorry, end
+... ≤ ∫⁻ (ω₂ : Ω₂), (εusage_for p i).exp * P₁ {ω : Ω₁ | (M₁ x₁ ω, M₂₀ (M₁ x₁ ω) ω₂) ∈ s} + δusage_for p i ∂P₂ : begin 
+  apply lintegral_mono,
+  cases i,
+  { exact λ ω₂, p.dp x₀ x₁ {o₁ | (o₁, M₂₀ o₁ ω₂) ∈ s} hx },
+  { intro ω₂,
+    simp_rw [δusage_for, add_zero],
+    refine p.odp i x₀ x₁ {o₁ | (o₁, M₂₀ o₁ ω₂) ∈ s} _ hx,
+    exact λ o₁ ho₁, (mem_prod.1 (hs ho₁)).1, }, end
+... = sorry : sorry
+
+-- need mu+ trick to reduce δusage
+
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - δusage p o₁)) : 

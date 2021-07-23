@@ -43,15 +43,17 @@ variables {P} {M}
 def odp_index (p : odp_partition P M) (o : O) : option p.index := 
   if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
 
-def εusage (p : odp_partition P M) (o : O) := match odp_index p o with
+def εusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 | none := p.ε
-| some i :=  p.ε_for i
-end
+| (some i) :=  p.ε_for i
 
-def δusage (p : odp_partition P M) (o : O) := match odp_index p o with
+def εusage (p : odp_partition P M) (o : O) := εusage_for p (odp_index p o)
+
+def δusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 | none := p.δ
-| some i := 0
-end
+| (some i) := 0
+
+def δusage (p : odp_partition P M) (o : O) := δusage_for p (odp_index p o)
 
 def odp_set_for (p : odp_partition P M) : option p.index → set O
 | none := set.univ \ ⋃ i, p.partition i
