@@ -61,6 +61,30 @@ def odp_set_for (p : odp_partition P M) : option p.index → set O
 
 def omega_set_for (p : odp_partition P M) (g : Ω → O) (i : option p.index) : set Ω := g ⁻¹' odp_set_for p i
 
+lemma odp_index_unique {o : O} {p : odp_partition P M} {i j : p.index}
+  (hi : o ∈ p.partition i) (hj : o ∈ p.partition j) : i = j :=
+begin
+  by_contra h,
+  exact p.disjoint i j h ⟨hi, hj⟩,
+end
+
+lemma odp_index_of_mem_partition {o : O} {p : odp_partition P M} {i : p.index}
+  (hi : o ∈ p.partition i) : odp_index p o = some i :=
+begin
+  have hex : ∃ j, o ∈ p.partition j := ⟨i, hi⟩,
+  simp only [odp_index, hex, dif_pos],
+  exact odp_index_unique (classical.some_spec hex) hi
+end
+
+lemma δusage_eq_δusage_for {o : O} {p : odp_partition P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
+  δusage p o = δusage_for p i :=
+begin
+  cases i,
+  { simp [odp_index, δusage, λ h, set.not_mem_of_mem_diff ho (set.mem_Union.2 h)] },
+  { unfold odp_set_for at ho, 
+    rw [δusage, odp_index_of_mem_partition ho] }
+end
+
 lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) : o ∈ odp_set_for p (odp_index p o) :=
 begin
   by_cases h : ∃ (i : p.index), o ∈ p.partition i,

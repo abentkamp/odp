@@ -1,4 +1,6 @@
 import .adversary
+import missing_integration
+import measure_theory.measure_space
 
 open measure_theory ennreal database_type
 open_locale ennreal
@@ -9,7 +11,7 @@ variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P�
 
 variables (O₁ O₂ : Type) [measurable_space O₁] [measurable_space O₂]
 
-variables (X : Type) [database_type X] (x₀ x₁ : X) (hx : neighboring x₀ x₁)
+variables (X : Type) [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
 
 variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
 
@@ -44,29 +46,53 @@ calc s = s ∩ (set.prod univ univ) : by simp
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod univ) : by rw set.Union_prod_const
 ... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod univ : by rw inter_Union
 
-lemma xx (s : set (O₁ × O₂)) 
+lemma δusage_on_odp_set_for (i : option p.index) : 
+  (∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage p (M₁ x ω₁) ∂P₁) 
+ = ∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage_for p i ∂P₁ :=
+begin
+  rw set_lintegral_fun_congr _,
+  { intros ω₁ hω₁,
+    exact δusage_eq_δusage_for hω₁ },
+  sorry
+end
+
+lemma xx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - δusage p o₁)):
-(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} 
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₀ (M₁ x ω.1) ω.2) ∈ s} 
 ≤ sorry :=
+let V := M₁ x ⁻¹' (odp_set_for p i) in
 calc 
-(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s}  = 
-∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x₁ ω₁, M₂₀ (M₁ x₁ ω₁) ω₂) ∈ s} ∂P₁ : 
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₀ (M₁ x ω.1) ω.2) ∈ s}  = 
+∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x ω₁, M₂₀ (M₁ x ω₁) ω₂) ∈ s} ∂P₁ : 
 begin
   rw measure.prod_apply,
   refl,
   sorry
 end
-...  ≤ ∫⁻ (ω₁ : Ω₁), (ε - εusage p (M₁ x₁ ω₁)).exp *
-    P₂ {ω : Ω₂ | M₂₁ (M₁ x₁ ω₁) ω ∈ {o₂ : O₂ | (M₁ x₁ ω₁, o₂) ∈ s}} +
-  (δ - δusage p (M₁ x₁ ω₁)) ∂P₁ :
+... = ∫⁻ (ω₁ : Ω₁) in V, P₂ {ω₂ : Ω₂ | (M₁ x ω₁, M₂₀ (M₁ x ω₁) ω₂) ∈ s} ∂P₁ :begin
+  rw set_lintegral_nonzero,
+  sorry,
+  { intros ω₁ hω₁,
+    convert measure_empty,
+    rw eq_empty_iff_forall_not_mem,
+    exact λ ω₂ hω₂, hω₁ (mem_prod.1 (hs hω₂)).1 }
+end
+...  ≤ ∫⁻ (ω₁ : Ω₁) in V, (ε - εusage p (M₁ x ω₁)).exp *
+    P₂ {ω : Ω₂ | M₂₁ (M₁ x ω₁) ω ∈ {o₂ : O₂ | (M₁ x ω₁, o₂) ∈ s}} +
+  (δ - δusage p (M₁ x ω₁)) ∂P₁ :
   begin 
     apply lintegral_mono,
     intro ω₁,
-    exact hM₂ (M₁ x₁ ω₁) {o₂ : O₂ | (M₁ x₁ ω₁, o₂) ∈ s},
+    exact hM₂ (M₁ x ω₁) {o₂ : O₂ | (M₁ x ω₁, o₂) ∈ s},
  end
-...  = sorry : begin rw lintegral_add,
-    sorry, sorry, sorry end
+...  = ∫⁻ (a : Ω₁) in
+    V,
+    (ε - εusage p (M₁ x a)).exp *
+      P₂ {ω : Ω₂ | M₂₁ (M₁ x a) ω ∈ {o₂ : O₂ | (M₁ x a, o₂) ∈ s}} ∂P₁ +
+  (δ * P₁ V - δusage_for p i * P₁ V) : begin rw [lintegral_add, lintegral_sub, lintegral_const, measure.restrict_apply_univ],
+rw [δusage_on_odp_set_for, lintegral_const, measure.restrict_apply_univ],
+    sorry, sorry, end
 ...  ≤ sorry : sorry
 
 include x₁ hx
