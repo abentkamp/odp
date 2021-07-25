@@ -87,7 +87,7 @@ end
 -- example : covariant_class ℝ≥0∞ ℝ≥0∞ (function.swap has_add.add) has_le.le :=
 -- by apply_instance
 
-lemma xxhahn (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ)
+lemma inequality_slice (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - δusage p o₁)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
@@ -212,21 +212,33 @@ lemma induction_step
 λ s,
 calc 
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
-  (P₁ ⊗ P₂) ((λ ω, prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2)) ⁻¹' s) : rfl
+  (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
   ... = ∑' (i : option p.index), 
-    (P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' (s ∩ (odp_set_for p i).prod univ)) : 
+    (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} : 
   begin
     rw ←measure_Union _,
-    rw ←preimage_Union,
+    apply congr_arg,
+    convert preimage_Union,
     rw ←split_set P₁ _ p s,
     sorry,
     sorry,
     sorry,
   end
---    ∫⁻ (ω₁ : Ω₁), P₂ ((λ ω₂, (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂)) ⁻¹' s) ∂P₁ : 
---   begin rw measure.prod_apply, refl, sorry end
--- ... = ∫⁻ (o₁ : O₁), P₂ ((λ ω₂, (o₁, M₂₀ o₁ ω₂)) ⁻¹' s) ∂(measure.map (λ ω₁, M₁ x₀ ω₁) P₁) : 
---   begin rw lintegral_map, sorry, sorry end
--- ... = ∑' (i : option p.index), ∫⁻ (o₁ : O₁) in odp_set_for p i, P₂ ((λ ω₂, (o₁, M₂₀ o₁ ω₂)) ⁻¹' s) ∂(measure.map (λ ω₁, M₁ x₀ ω₁) P₁) : 
---   begin rw sum_lintegral_odp_set_for _ _ _, sorry end
-... ≤ exp ε * (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} + δ : sorry
+... ≤ ∑' (i : option p.index), 
+  (ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} +
+    pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i) +
+  (δ - δusage_for p i) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i})  : 
+begin
+  refine tsum_mono _ _ _,
+  sorry,-- TODO: summable
+  sorry, -- TODO: summable
+  intro i,
+  apply inequality_slice,
+  simp,
+  apply hM₂,
+end
+
+... ≤ exp ε * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} + δ : 
+begin
+  -- sorry
+end
