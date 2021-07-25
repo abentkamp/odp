@@ -46,21 +46,23 @@ calc s = s ∩ (set.prod univ univ) : by simp
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod univ) : by rw set.Union_prod_const
 ... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod univ : by rw inter_Union
 
-lemma δusage_on_odp_set_for (i : option p.index) : 
-  (∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage p (M₁ x ω₁) ∂P₁) 
- = ∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage_for p i ∂P₁ :=
-begin
-  rw set_lintegral_fun_congr _,
-  { intros ω₁ hω₁,
-    exact δusage_eq_δusage_for hω₁ },
-  sorry
-end
+-- lemma δusage_on_odp_set_for (i : option p.index) : 
+--   (∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage p (M₁ x ω₁) ∂P₁) 
+--  = ∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage_for p i ∂P₁ :=
+-- begin
+--   rw set_lintegral_fun_congr _,
+--   { intros ω₁ hω₁,
+--     exact δusage_eq_δusage_for hω₁ },
+--   sorry
+-- end
 
 lemma xx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - δusage p o₁)):
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₀ (M₁ x ω.1) ω.2) ∈ s} 
-≤ sorry :=
+≤ (ε - εusage_for p i).exp *
+  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₁ (M₁ x ω.1) ω.2) ∈ s} +
+  (δ - δusage_for p i) * P₁ (M₁ x ⁻¹' (odp_set_for p i)) :=
 let V := M₁ x ⁻¹' (odp_set_for p i) in
 calc 
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₀ (M₁ x ω.1) ω.2) ∈ s}  = 
@@ -86,24 +88,52 @@ end
     intro ω₁,
     exact hM₂ (M₁ x ω₁) {o₂ : O₂ | (M₁ x ω₁, o₂) ∈ s},
  end
-...  = ∫⁻ (a : Ω₁) in
-    V,
-    (ε - εusage p (M₁ x a)).exp *
-      P₂ {ω : Ω₂ | M₂₁ (M₁ x a) ω ∈ {o₂ : O₂ | (M₁ x a, o₂) ∈ s}} ∂P₁ +
-  (δ * P₁ V - δusage_for p i * P₁ V) : begin rw [lintegral_add, lintegral_sub, lintegral_const, measure.restrict_apply_univ],
-rw [δusage_on_odp_set_for, lintegral_const, measure.restrict_apply_univ],
-    sorry, sorry, end
-...  ≤ sorry : sorry
+...  = 
+   ∫⁻ (ω₁ : Ω₁) in V, 
+     (ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (M₁ x ω₁, M₂₁ (M₁ x ω₁) ω₂) ∈ s}
+      + (δ - δusage_for p i) ∂P₁ : 
+  begin
+    apply set_lintegral_fun_congr,
+    sorry,
+    intros ω₁ hω₁,
+    simp_rw εusage_eq_εusage_for hω₁,
+    simp_rw δusage_eq_δusage_for hω₁, 
+    refl,
+  end
+... = (ε - εusage_for p i).exp *
+    ∫⁻ (ω₁ : Ω₁) in V,
+      P₂ {ω₂ : Ω₂ | (M₁ x ω₁, M₂₁ (M₁ x ω₁) ω₂) ∈ s} ∂P₁ +
+  (δ - δusage_for p i) * P₁ V : 
+begin
+    rw [lintegral_add, lintegral_const_mul, lintegral_const, measure.restrict_apply_univ],
+    sorry,
+    sorry,
+    sorry
+end
+...  = (ε - εusage_for p i).exp *
+  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x ω.1, M₂₁ (M₁ x ω.1) ω.2) ∈ s} +
+  (δ - δusage_for p i) * P₁ V : 
+  begin 
+    rw measure.prod_apply,
+    rw ←set_lintegral_nonzero,
+    refl,
+    sorry,
+    { intros ω₁ hω₁,
+      convert measure_empty,
+      rw eq_empty_iff_forall_not_mem,
+      exact λ ω₂ hω₂, hω₁ (mem_prod.1 (hs hω₂)).1 },
+    sorry,
+  end
 
 include x₁ hx
 lemma xxx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ) :
-(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2)) ⁻¹' s)
-≤ (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} +
-  δusage_for p i 
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₁ (M₁ x₀ ω.1) ω.2) ∈ s}
+≤ (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
+  δusage_for p i
 :=
 calc 
-(P₁ ⊗ P₂) ((λ ω, (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd)) ⁻¹' s)
-= ∫⁻ (ω₂ : Ω₂), P₁ ((λ (ω₁ : Ω₁), (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂)) ⁻¹' s) ∂P₂ : 
+(P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₁ (M₁ x₀ ω.1) ω.2) ∈ s}
+= ∫⁻ (ω₂ : Ω₂), P₁ ((λ (ω₁ : Ω₁), (M₁ x₀ ω₁, M₂₁ (M₁ x₀ ω₁) ω₂)) ⁻¹' s) ∂P₂ : 
        begin 
         rw [← measure.prod_swap, measure.map_apply, measure.prod_apply], 
         simp only [preimage_preimage], 
@@ -111,30 +141,28 @@ calc
         sorry,
         sorry,
         sorry, end
-... ≤ ∫⁻ (ω₂ : Ω₂), (εusage_for p i).exp * P₁ {ω : Ω₁ | (M₁ x₁ ω, M₂₀ (M₁ x₁ ω) ω₂) ∈ s} + δusage_for p i ∂P₂ : begin 
+... ≤ ∫⁻ (ω₂ : Ω₂), (εusage_for p i).exp * P₁ {ω : Ω₁ | (M₁ x₁ ω, M₂₁ (M₁ x₁ ω) ω₂) ∈ s} + δusage_for p i ∂P₂ : begin 
   apply lintegral_mono,
   cases i,
-  { exact λ ω₂, p.dp x₀ x₁ {o₁ | (o₁, M₂₀ o₁ ω₂) ∈ s} hx },
+  { exact λ ω₂, p.dp x₀ x₁ {o₁ | (o₁, M₂₁ o₁ ω₂) ∈ s} hx },
   { intro ω₂,
     simp_rw [δusage_for, add_zero],
-    refine p.odp i x₀ x₁ {o₁ | (o₁, M₂₀ o₁ ω₂) ∈ s} _ hx,
+    refine p.odp i x₀ x₁ {o₁ | (o₁, M₂₁ o₁ ω₂) ∈ s} _ hx,
     exact λ o₁ ho₁, (mem_prod.1 (hs ho₁)).1, }, end
 ... = (εusage_for p i).exp *
-    ∫⁻ (ω₂ : Ω₂), P₁ {ω₁ : Ω₁ | (M₁ x₁ ω₁, M₂₀ (M₁ x₁ ω₁) ω₂) ∈ s} ∂P₂ +
+    ∫⁻ (ω₂ : Ω₂), P₁ {ω₁ : Ω₁ | (M₁ x₁ ω₁, M₂₁ (M₁ x₁ ω₁) ω₂) ∈ s} ∂P₂ +
   δusage_for p i * P₂ univ :
 begin rw lintegral_add,
     rw lintegral_const,
     rw lintegral_const_mul,
-    sorry, sorry, sorry end
-... = (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₀ (M₁ x₁ ω.1) ω.2) ∈ s} +
-  δusage_for p i: 
+    sorry, sorry, sorry, end
+... = (εusage_for p i).exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
+  δusage_for p i : 
 begin 
         rw [← measure.prod_swap, measure.map_apply, measure.prod_apply, measure_univ, mul_one],
         refl,
     sorry, sorry, sorry
         end
-... = sorry : sorry
-
 
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 

@@ -85,6 +85,15 @@ begin
     rw [δusage, odp_index_of_mem_partition ho] }
 end
 
+lemma εusage_eq_εusage_for {o : O} {p : odp_partition P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
+  εusage p o = εusage_for p i :=
+begin
+  cases i,
+  { simp [odp_index, εusage, λ h, set.not_mem_of_mem_diff ho (set.mem_Union.2 h)] },
+  { unfold odp_set_for at ho, 
+    rw [εusage, odp_index_of_mem_partition ho] }
+end
+
 lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) : o ∈ odp_set_for p (odp_index p o) :=
 begin
   by_cases h : ∃ (i : p.index), o ∈ p.partition i,
