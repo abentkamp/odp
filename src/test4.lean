@@ -1,6 +1,7 @@
 import .adversary
 import missing_integration
 import measure_theory.measure_space
+import missing_unsigned_hahn
 
 open measure_theory ennreal database_type
 open_locale ennreal
@@ -46,15 +47,18 @@ calc s = s ∩ (set.prod univ univ) : by simp
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod univ) : by rw set.Union_prod_const
 ... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod univ : by rw inter_Union
 
--- lemma δusage_on_odp_set_for (i : option p.index) : 
---   (∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage p (M₁ x ω₁) ∂P₁) 
---  = ∫⁻ (ω₁ : Ω₁) in M₁ x ⁻¹' (odp_set_for p i), δusage_for p i ∂P₁ :=
--- begin
---   rw set_lintegral_fun_congr _,
---   { intros ω₁ hω₁,
---     exact δusage_eq_δusage_for hω₁ },
---   sorry
--- end
+noncomputable def pos_hahn : measure O₁ := 
+measure.map (λ ω, M₁ x₀ ω) P₁ - ε.exp • measure.map (λ ω, M₁ x₁ ω) P₁
+
+lemma pos_hahn_prop : 
+  measure.map (λ ω, M₁ x₀ ω) P₁ 
+    ≤ ε.exp • measure.map (λ ω, M₁ x₁ ω) P₁ + pos_hahn P₁ O₁ X x₀ x₁ M₁ ε :=
+begin
+  rw [add_comm, pos_hahn],
+  refine @measure.le_sub_add _ _ _ _ sorry sorry,
+end
+
+#check measure_theory.lintegral_mono' 
 
 lemma xx (s : set (O₁ × O₂)) (i : option p.index) (hs : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 

@@ -1,0 +1,59 @@
+import measure_theory.decomposition.unsigned_hahn
+
+
+open measure_theory
+
+
+#check classical.some hahn_decomposition
+
+variables {α : Type*} [measurable_space α] {μ ν : measure α} [finite_measure μ] [finite_measure ν]
+
+
+instance restrict.finite_measure' (s : set α) (μ : measure α) [finite_measure μ] :
+  finite_measure (μ.restrict s) :=
+@restrict.finite_measure α _ s μ (fact.mk (measure_lt_top μ s))
+
+lemma measure_theory.measure.le_sub_add : μ ≤ μ - ν + ν :=
+begin
+  obtain ⟨s, hsm, hs, hsc⟩ : ∃ (s : set α),
+    measurable_set s ∧
+      (∀ (t : set α), measurable_set t → t ⊆ s → μ t ≤ ν t) ∧
+        ∀ (t : set α), measurable_set t → t ⊆ sᶜ → ν t ≤ μ t := hahn_decomposition,
+  have h_restrict_le_restrict : ν.restrict sᶜ ≤ μ.restrict sᶜ,
+    { rw measure.le_iff,
+      intros t ht,
+      rw [measure.restrict_apply ht, measure.restrict_apply ht],
+      exact hsc (t ∩ sᶜ) (by measurability) (by simp) },
+  intros t ht,
+  -- have := set.disjoint_of_subset (show t ∩ sᶜ ⊆ sᶜ, by simp),
+  -- have h_disjoint : disjoint (t ∩ s) (t ∩ sᶜ) := sorry,
+  -- { sorry },
+  have : t = (t ∩ s) ∪ (t ∩ sᶜ), by simp,
+  rw [this, measure_union, measure_union, measure.add_apply, measure.add_apply],
+  refine add_le_add (le_add_left _) _,
+  { exact hs (t ∩ s) (by measurability) (by simp) },
+  { --have := finite_measure (ν.restrict sᶜ), by apply_instance,
+    haveI : finite_measure (ν.restrict sᶜ) := by apply_instance,
+    rw [←measure.restrict_apply ht, ←measure.restrict_apply ht, ←measure.restrict_apply ht, 
+        measure.restrict_sub_eq_restrict_sub_restrict (show measurable_set sᶜ, by measurability)],
+    rw @measure.sub_apply _ _ _ (ν.restrict sᶜ) _ (by apply_instance) ht,
+    convert le_refl _,
+    rw [←@measure.sub_apply _ _ _ (ν.restrict sᶜ) _ (by apply_instance) ht, ←measure.add_apply],
+    rw @measure.sub_add_cancel_of_le _ _ (μ.restrict sᶜ) (ν.restrict sᶜ) _ _,
+    rw measure.le_iff,
+    intros t ht,
+    rw [measure.restrict_apply ht, measure.restrict_apply ht],
+    exact hsc (t ∩ sᶜ) (by measurability) (by simp),
+    exact h_restrict_le_restrict,
+    exact h_restrict_le_restrict },
+  apply set.disjoint_of_subset _ _ (@disjoint_compl_right _ s _),
+  { simp },
+  { simp },
+  { measurability },
+  { measurability },
+  apply set.disjoint_of_subset _ _ (@disjoint_compl_right _ s _),
+  { simp },
+  { simp },
+  { measurability },
+  { measurability },
+end
