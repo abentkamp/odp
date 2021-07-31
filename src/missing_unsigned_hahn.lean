@@ -57,3 +57,34 @@ begin
   { measurability },
   { measurability },
 end
+
+lemma measure.sub_apply_finite {α : Type*} [measurable_space α] (μ ν : measure α) 
+  [finite_measure μ] [finite_measure ν] (s : set α) (hs : measurable_set s) : 
+  ∃ t, (μ - ν) s = μ (s ∩ t) - ν (s ∩ t) :=
+begin
+  rcases @hahn_decomposition _ _ μ ν _ _ with ⟨t, ht, ht₁, ht₂⟩,
+  use t,
+  rw ←@measure.restrict_compl_add_restrict _ _ (μ - ν) t,
+  rw [measure.add_apply, measure.restrict_sub_eq_restrict_sub_restrict, 
+    measure.restrict_sub_eq_restrict_sub_restrict],
+  have μ_le_ν : μ.restrict tᶜ ≤ ν.restrict tᶜ,
+  { rw measure.le_iff,
+    intros u hu,
+    rw [measure.restrict_apply hu, measure.restrict_apply hu],
+    exact ht₂ (u ∩ tᶜ) (by simp [ht, hu]) (set.inter_subset_right _ _) },
+  have ν_le_μ : ν.restrict t ≤ μ.restrict t,
+  { rw measure.le_iff,
+    intros u hu,
+    rw [measure.restrict_apply hu, measure.restrict_apply hu],
+    exact ht₁ (u ∩ t) (by simp [ht, hu]) (by simp) },
+  rw measure.sub_apply _ ν_le_μ,
+  rw measure.sub_eq_zero_of_le μ_le_ν,
+  simp only [measure.coe_zero, pi.zero_apply, zero_add],
+  rw [measure.restrict_apply, measure.restrict_apply],
+  apply hs,
+  apply hs,
+  apply hs,
+  apply ht,
+  simp [ht],
+  apply ht,
+end

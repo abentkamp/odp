@@ -33,7 +33,7 @@ noncomputable def odp_composition₀_aux (bit : bool) :
   let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
   let acc := acc ++ [o] in
   let ε := ε - εusage 𝒜_choice.odp_partition o in
-  let δ := δ - δusage 𝒜_choice.odp_partition o in
+  let δ := δ - 𝒜_choice.odp_partition.δ in
   odp_composition₀_aux acc ε δ ωs
 
 noncomputable def odp_composition₀ (bit : bool) : Π (ε δ : ℝ≥0∞) (ωs : list Ω), list O := 
@@ -69,7 +69,7 @@ lemma odp_composition₀_cons :
   let 𝒜_choice := 𝒜 [] ε δ in 
   let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
   let ε' := ε - εusage 𝒜_choice.odp_partition o in
-  let δ' := δ - δusage 𝒜_choice.odp_partition o in
+  let δ' := δ - 𝒜_choice.odp_partition.δ in
   let 𝒜' := (λ os, 𝒜 (o :: os)) in
   o :: odp_composition₀ 𝒜' bit ε' δ' ωs := 
 by simp [odp_composition₀, odp_composition₀_aux, cons_odp_composition₀_aux]
@@ -129,7 +129,7 @@ lemma odp_composition_succ (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ω : Ω)
   let 𝒜_choice := 𝒜 [] ε δ in 
   let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
   let ε' := ε - εusage 𝒜_choice.odp_partition o in
-  let δ' := δ - δusage 𝒜_choice.odp_partition o in
+  let δ' := δ - 𝒜_choice.odp_partition.δ in
   let 𝒜' := (λ os, 𝒜 (o :: os)) in
   vec_cons o (odp_composition 𝒜' n bit ε' δ' ωs) :=
 begin

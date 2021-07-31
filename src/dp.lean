@@ -17,6 +17,7 @@ def diff_private_aux :=
   ∀ (s : set O),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
+-- TODO: need to add measurability assumption on s?
 def diff_private :=
   ∀ (x y : X) (s : set O), neighboring x y → 
   P {ω : Ω | M x ω ∈ s} ≤ exp ε * P {ω : Ω | M y ω ∈ s} + δ
@@ -27,7 +28,7 @@ def output_diff_private (s : set O) :=
 
 structure odp_partition :=
 (ε δ : ℝ≥0∞)
-(index : Type*) 
+(index : Type) 
 [encodable : encodable index] 
 (partition : index → set O)
 (ε_for : index → ℝ≥0∞)
@@ -49,12 +50,6 @@ def εusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 
 def εusage (p : odp_partition P M) (o : O) := εusage_for p (odp_index p o)
 
-def δusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
-| none := p.δ
-| (some i) := 0
-
-def δusage (p : odp_partition P M) (o : O) := δusage_for p (odp_index p o)
-
 def odp_set_for (p : odp_partition P M) : option p.index → set O
 | none := set.univ \ ⋃ i, p.partition i
 | (some i) :=  p.partition i
@@ -74,15 +69,6 @@ begin
   have hex : ∃ j, o ∈ p.partition j := ⟨i, hi⟩,
   simp only [odp_index, hex, dif_pos],
   exact odp_index_unique (classical.some_spec hex) hi
-end
-
-lemma δusage_eq_δusage_for {o : O} {p : odp_partition P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
-  δusage p o = δusage_for p i :=
-begin
-  cases i,
-  { simp [odp_index, δusage, λ h, set.not_mem_of_mem_diff ho (set.mem_Union.2 h)] },
-  { unfold odp_set_for at ho, 
-    rw [δusage, odp_index_of_mem_partition ho] }
 end
 
 lemma εusage_eq_εusage_for {o : O} {p : odp_partition P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
