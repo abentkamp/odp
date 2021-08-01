@@ -17,7 +17,7 @@ variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ 
 
 variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
 
-variables (ε δ : ℝ≥0∞) 
+variables (ε δ : ℝ≥0∞) (hδ : p.δ ≤ δ)
 
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
   
@@ -253,6 +253,7 @@ begin
   sorry,
 end
 
+-- include hδ
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
@@ -341,7 +342,10 @@ begin
     apply prob_le_one }
 end
 ... = exp ε * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} + δ : 
-sorry
+begin
+  rw add_assoc,
+  rw ennreal.add_sub_cancel_of_le,
+end
 
 
 
