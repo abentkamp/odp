@@ -253,7 +253,7 @@ begin
   sorry,
 end
 
--- include hδ
+include hδ
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
@@ -314,7 +314,8 @@ begin
   have : (⋃ i, (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd)) ⁻¹'
               (s ∩ (odp_set_for p i).prod univ))
                = (λ ω, (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd)) ⁻¹' s,
-  { sorry -- TODO!
+  { rw [←preimage_Union], 
+    rw ←split_set P₁ _ p s,
   },
   rw sum_pos_hahn,
   rw ←measure_Union _,
@@ -345,6 +346,7 @@ end
 begin
   rw add_assoc,
   rw ennreal.add_sub_cancel_of_le,
+  exact hδ,
 end
 
 

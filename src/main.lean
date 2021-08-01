@@ -92,7 +92,7 @@ begin
         ε δ,
       { exact induction_step P (P ^^ n) ((𝒜 list.nil ε δ).x ff) ((𝒜 list.nil ε δ).x tt) 
           (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω) (𝒜 [] ε δ).odp_partition ε δ
-        -- (𝒜 list.nil ε δ).hδ
+          (𝒜 list.nil ε δ).hδ
           (λ o ω, algo_step 𝒜 o n ff ε δ ω) 
           (λ o ω, algo_step 𝒜 o n tt ε δ ω) ih' },
       simp only [odp_composition_succ] {zeta := ff},
