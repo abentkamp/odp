@@ -15,6 +15,18 @@ begin
   simp [exp, hx, real.exp_pos]
 end
 
+
+lemma one_le_exp (x : ℝ≥0∞) : 1 ≤ x.exp :=
+begin
+  by_cases hx : x = ∞,
+  { simp [exp, hx, real.exp_pos, real.one_le_exp] },
+  { simp only [exp, hx, one_le_coe_iff, if_false],
+    rw [←one_le_coe_iff],
+    norm_cast,
+    refine le_max_of_le_left (real.one_le_exp _),
+    apply ennreal.to_real_nonneg }
+end
+
 @[simp] lemma exp_top : (∞ : ℝ≥0∞).exp = ∞ := rfl
 
 lemma exp_add (x y : ℝ≥0∞) : exp (x + y) = exp x * exp y :=
