@@ -1,4 +1,5 @@
 import data.set.basic
+import data.matrix.notation
 
 instance is_empty_fin_zero : is_empty (fin 0) :=
 is_empty.mk (λ x, nat.not_lt_zero x.1 x.2)
@@ -23,4 +24,13 @@ begin
   intro b,
   rw subsingleton.elim b a,
   apply ha
+end
+
+section
+open matrix
+
+lemma matrix.injective_head_tail {α : Type} (n : ℕ) : 
+  function.injective (λ (x : fin n.succ → α), (vec_head x, vec_tail x)) :=
+λ x y hxy, by rw [←cons_head_tail x, ←cons_head_tail y, (prod.mk.inj hxy).1, (prod.mk.inj hxy).2]
+
 end

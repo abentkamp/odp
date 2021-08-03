@@ -68,7 +68,7 @@ begin
           (λ o ω, algo_step 𝒜 o n tt ε δ ω) ih' },
       simp only [odp_composition_succ] {zeta := ff},
       apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
-      sorry, --injectivity of (vec_head, vec_tail)
+      apply injective_head_tail,
       convert h_ind_step,
       simp only [tail_cons, head_cons, algo_step], 
       simp [algo_step],

@@ -44,4 +44,8 @@ begin
     simp [hx, hy] }
 end
 
+noncomputable instance : canonically_linear_ordered_add_monoid ℝ≥0∞ :=
+{ ..canonically_ordered_comm_semiring.to_canonically_ordered_add_monoid ℝ≥0∞,
+  ..complete_linear_order.to_linear_order ℝ≥0∞}
+  
 end ennreal

@@ -103,3 +103,9 @@ begin
   rw [←set.preimage_image_eq s hf],
   exact h (f '' s)
 end
+
+lemma split_set (p : odp_partition P M) (s : set (O × O')) : s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
+calc s = s ∩ (set.prod set.univ set.univ) : by simp
+... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) : by rw ←union_odp_set_for_eq_univ _
+... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod set.univ) : by rw set.Union_prod_const
+... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ : by rw set.inter_Union
