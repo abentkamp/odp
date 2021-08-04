@@ -13,8 +13,9 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 (hε : odp_partition.ε ≤ ε)
 (hδ : odp_partition.δ ≤ δ)
 (hε_for : ∀ i, odp_partition.ε_for i ≤ ε)
-(x : bool → X) -- TODO: maybe x₁ x₀ ??
-(hx : neighboring (x ff) (x tt))
+(x : fin 2 → X)
+(hx : neighboring (x 0) (x 1))
+
 
 def adversary := Π (outputs : list O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ
 
@@ -23,7 +24,7 @@ variables {P} {O} {X} (𝒜 : adversary P O X)
 open_locale matrix
 open matrix
 
-noncomputable def odp_composition₀_aux (bit : bool) : 
+noncomputable def odp_composition₀_aux (bit : fin 2) : 
   Π (acc : list O) (ε δ : ℝ≥0∞) (ω : list Ω), list O
 | acc ε δ [] := acc
 | acc ε δ (ω :: ωs) := 
@@ -34,10 +35,10 @@ noncomputable def odp_composition₀_aux (bit : bool) :
   let δ := δ - 𝒜_choice.odp_partition.δ in
   odp_composition₀_aux acc ε δ ωs
 
-noncomputable def odp_composition₀ (bit : bool) : Π (ε δ : ℝ≥0∞) (ωs : list Ω), list O := 
+noncomputable def odp_composition₀ (bit : fin 2) : Π (ε δ : ℝ≥0∞) (ωs : list Ω), list O := 
 odp_composition₀_aux 𝒜 bit []
 
-variables (bit : bool) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (ω : Ω)(ωs : list Ω)
+variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (ω : Ω)(ωs : list Ω)
 
 lemma append_odp_composition₀_aux : 
   acc₁ ++ (odp_composition₀_aux (λ os, 𝒜 (acc₁ ++ os)) bit acc₂ ε δ ωs)
@@ -81,14 +82,14 @@ begin
   { simp [odp_composition₀_cons, ωs_ih] }
 end
 
-noncomputable def odp_composition (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : fin n → O := 
+noncomputable def odp_composition (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : fin n → O := 
 cast (by rw [length_odp_composition₀, fin.length_to_list]) 
   (odp_composition₀ 𝒜 bit ε δ (fin.to_list ωs)).to_fin
 
-lemma odp_composition_zero (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : 
+lemma odp_composition_zero (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ωs : fin n → Ω) : 
   odp_composition 𝒜 0 bit ε δ ![] = ![] := rfl
 
-lemma odp_composition_succ (n : ℕ) (bit : bool) (ε δ : ℝ≥0∞) (ω : Ω) (ωs : fin n → Ω) : 
+lemma odp_composition_succ (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : Ω) (ωs : fin n → Ω) : 
   odp_composition 𝒜 n.succ bit ε δ (vec_cons ω ωs) = 
   let 𝒜_choice := 𝒜 [] ε δ in 
   let o := 𝒜_choice.M (𝒜_choice.x bit) ω in
