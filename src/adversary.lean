@@ -13,7 +13,7 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 (hε : odp_partition.ε ≤ ε)
 (hδ : odp_partition.δ ≤ δ)
 (hε_for : ∀ i, odp_partition.ε_for i ≤ ε)
-(x : bool → X)
+(x : bool → X) -- TODO: maybe x₁ x₀ ??
 (hx : neighboring (x ff) (x tt))
 
 def adversary := Π (outputs : list O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ

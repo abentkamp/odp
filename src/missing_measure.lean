@@ -19,6 +19,31 @@ end
 
 open finset
 
+@[measurability] lemma measurable.pi_fin {n : ℕ}
+  {α : fin n.succ → Type} [∀ i, measurable_space (α i)] {β : Type} [measurable_space β] {f : β → Πi, α i}
+  (hf₁ : measurable (λ a : β, (f a) 0))
+  (hf₂ : measurable (λ a, fin.tail (f a))) :
+  measurable f :=
+begin
+  rw measurable_pi_iff,
+  rintro ⟨k, hk⟩,
+  cases k,
+  exact hf₁,
+  rw measurable_pi_iff at hf₂,
+  exact hf₂ ⟨k, nat.lt_of_succ_lt_succ hk⟩
+end 
+
+lemma measurable.fin_cons {n : ℕ} {α : fin n.succ → Type} {β : Type} [∀ i, measurable_space (α i)] [measurable_space β]
+  {f : β → α 0} {g : β → Π (i : fin n), α i.succ}
+  (hf : measurable f) (hg : measurable g) :
+  measurable (λ (x : β), fin.cons (f x) (g x)) :=
+begin
+  apply measurable.pi_fin,
+  apply hf,
+  simp_rw fin.tail_cons,
+  apply hg,
+end
+
 lemma measure.pi_succ {n : ℕ} (α : fin n.succ → Type) [∀ i, measurable_space (α i)] 
   (μ : Π (i : fin n.succ), measure (α i)) [∀ i, sigma_finite (μ i)] : 
   measure.pi (λ i, μ i) = 
@@ -82,7 +107,7 @@ begin
   { exact hs 0 },
   { apply measurable_set.univ_pi_fintype,
     intro h, apply hs },
-  { unfold measurable,
-    intros t ht, sorry},
+  { apply measurable.fin_cons, -- TODO: Why does measurability not work here?
+    measurability },
   { apply measurable_set.univ_pi_fintype, intro h, apply hs },
 end

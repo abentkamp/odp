@@ -13,7 +13,8 @@ variables {X : Type} [database_type X] (M : X → Ω → O) (M₀ : Ω → O) (M
 
 variables (ε δ : ℝ≥0∞)
 
-def diff_private_aux :=
+/- Differential provacy for compositions M₀, M₁ of mechanisms -/
+def diff_private_aux := -- TODO Rename: diff_private_composition
   ∀ (s : set O),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
