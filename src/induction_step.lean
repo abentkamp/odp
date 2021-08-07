@@ -223,15 +223,22 @@ lemma induction_step
 calc 
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
-  ... = ∑' (i : option p.index), 
-    (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} : 
+  ... = 
+  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p none).prod univ}
+  + ∑' (i : p.index), 
+    (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p (some i)).prod univ} : 
   begin
     rw ←measure_Union _,
+    rw ←measure_union _,
+    rw ←Union_option (λ i, {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ}),
     apply congr_arg,
     convert preimage_Union,
     rw ←split_set p s,
     sorry,
     sorry,
+    sorry,
+    sorry,
+    apply p.encodable,
     sorry,
   end
 ... ≤ ∑' (i : option p.index), 
@@ -265,7 +272,7 @@ end
              s ∩ (odp_set_for p b).prod univ}
     + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     + (δ - p.δ) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
-sorry -- Technical issue here: multiplication in ennreal is not continuous
+sorry -- Technical issue here: multiplication in ennreal is not continuous -- try finset.sum_hom_rel ?
 ... = ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) +
   (δ - p.δ) * P₁ (⋃ (i : option p.index), {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}) : 
