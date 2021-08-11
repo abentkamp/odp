@@ -29,6 +29,12 @@ end
 
 @[simp] lemma exp_top : (∞ : ℝ≥0∞).exp = ∞ := rfl
 
+lemma exp_lt_top_of_lt_top (a : ℝ≥0∞) (ha : a < ∞) : a.exp < ∞ :=
+begin
+  rw [lt_top_iff_ne_top] at ha,
+  simp [exp, ha],
+end
+
 lemma exp_add (x y : ℝ≥0∞) : exp (x + y) = exp x * exp y :=
 begin
   by_cases hx : x = ∞;

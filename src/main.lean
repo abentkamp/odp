@@ -55,14 +55,19 @@ begin
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
     { haveI : probability_measure (P ^^ n) := 
         sorry, -- TODO
+      have hM : ∀ (x : X), measurable ((𝒜 list.nil ε δ).M x) :=
+        sorry, 
       have h_ind_step : diff_private_aux (P ⊗ P ^^ n)
         (λ ω, let o := (𝒜 [] ε δ).M ((𝒜 [] ε δ).x 0) ω.1 in 
               (o, algo_step 𝒜 o n 0 ε δ ω.2))
         (λ ω, let o := (𝒜 [] ε δ).M ((𝒜 [] ε δ).x 1) ω.1 in
               (o, algo_step 𝒜 o n 1 ε δ ω.2))
         ε δ,
-      { exact induction_step P (P ^^ n) ((𝒜 list.nil ε δ).x 0) ((𝒜 list.nil ε δ).x 1) 
-          (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω) (𝒜 [] ε δ).odp_partition ε δ
+      { exact @induction_step _ _ _ _ P (P ^^ n) _ _ _ _ _ _ _ _ 
+          ((𝒜 list.nil ε δ).x 0) 
+          ((𝒜 list.nil ε δ).x 1) 
+          (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω) hM
+          (𝒜 [] ε δ).odp_partition ε δ
           (𝒜 list.nil ε δ).hδ
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
           (λ o ω, algo_step 𝒜 o n 1 ε δ ω) ih' },

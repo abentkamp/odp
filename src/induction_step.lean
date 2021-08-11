@@ -14,21 +14,35 @@ variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂]
 variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P₁] [probability_measure P₂]
 variables {O₁ O₂ : Type} [measurable_space O₁] [measurable_space O₂]
 variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
-variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
-variables (ε δ : ℝ≥0∞) (hδ : p.δ ≤ δ)
+variables (M₁ : X → Ω₁ → O₁) [hM₁ : ∀ x, measurable (M₁ x)] (p : odp_partition P₁ M₁)
+variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : p.δ ≤ δ)
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
 
 noncomputable def pos_hahn : measure O₁ := 
 measure.map (λ ω, M₁ x₀ ω) P₁ - ε.exp • measure.map (λ ω, M₁ x₁ ω) P₁
 
+section
+include hM₁ hε
 lemma pos_hahn_prop : 
   measure.map (λ ω₁, M₁ x₀ ω₁) P₁ 
     ≤ ε.exp • measure.map (λ ω₁, M₁ x₁ ω₁) P₁ + pos_hahn P₁ x₀ x₁ M₁ ε :=
 begin
   rw [add_comm, pos_hahn],
-  haveI : finite_measure (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁) := sorry,
-  haveI : finite_measure (ε.exp • measure.map (λ (ω : Ω₁), M₁ x₁ ω) P₁) := sorry,
+  haveI : ∀ x, finite_measure (measure.map (λ (ω : Ω₁), M₁ x ω) P₁) :=
+  begin
+    intro x,
+    apply finite_measure.map _, 
+    apply hM₁, 
+    apply_instance
+  end,
+  haveI : finite_measure (ε.exp • measure.map (λ (ω : Ω₁), M₁ x₁ ω) P₁) := 
+  begin
+    apply finite_measure.smul,
+    apply exp_lt_top_of_lt_top,
+    apply hε,
+  end,
   apply measure.le_sub_add,
+end
 end
 
 lemma diff_private_aux_min (s : set (O₁ × O₂)) (o₁ : O₁) 
@@ -51,6 +65,8 @@ begin
   exact le_trans (min_le_right _ _) (add_le_add (le_refl _) (min_le_right _ _)),
 end
 
+section
+include hM₁
 lemma inequality_slice (s : set (O₁ × O₂)) (i : option p.index) 
   (hs : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
@@ -121,7 +137,8 @@ begin
   refine add_le_add _ (le_refl _),
   refine measure_theory.lintegral_mono' _ (le_refl _),
   refine measure.restrict_mono (λ x hx, hx) _,
-  apply pos_hahn_prop,
+  apply @pos_hahn_prop _ _ P₁ _ _ _ _ _ x₀ x₁  M₁ hM₁ _,
+  sorry
 end
  ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
       ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
@@ -164,6 +181,7 @@ begin
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hs hω₂)).1 },
+end
 end
 
 include p hx
@@ -218,9 +236,7 @@ begin
   sorry,
 end
 
-#check preimage_Union
-
-include hδ
+include hδ hM₁
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
@@ -252,9 +268,10 @@ calc
 begin
   refine fintype.sum_mono _,
   intro i,
-  apply inequality_slice,
+  apply @inequality_slice _ _ _ _ P₁ P₂ _ _ _ _ _ _ _ _ _ _ _ hM₁, --TODO: What's going on here
   simp,
   apply hM₂,
+  apply_instance
 end
 ... = ∑ (b : option p.index),
       ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈

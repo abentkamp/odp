@@ -111,3 +111,19 @@ begin
     measurability },
   { apply measurable_set.univ_pi_fintype, intro h, apply hs },
 end
+
+lemma measure_theory.finite_measure.map {α β : Type*} [measurable_space α] [measurable_space β] (μ : measure α) [finite_measure μ]
+  {f : α → β} (hf : measurable f) : finite_measure (measure.map f μ) := 
+⟨begin 
+  rw measure.map_apply hf, 
+  apply measure_lt_top, 
+  measurability 
+end⟩ 
+
+lemma measure_theory.finite_measure.smul {α : Type*} [measurable_space α] (μ : measure α) [finite_measure μ]
+  {a : ennreal} (ha : a < ⊤): finite_measure (a • μ) := 
+⟨begin 
+  rw measure.smul_apply, 
+  apply ennreal.mul_lt_top ha,
+  apply measure_lt_top,
+end⟩ 
