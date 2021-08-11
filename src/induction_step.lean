@@ -3,9 +3,11 @@ import missing_integration
 import measure_theory.measure_space
 import missing_unsigned_hahn
 import missing_infinite_sum
+import missing_finset
 
 open measure_theory ennreal database_type set
 open_locale ennreal
+open_locale big_operators
 local infix ` ⊗ `:50  := measure.prod
 
 variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂] 
@@ -164,10 +166,14 @@ begin
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hs hω₂)).1 },
 end
 
-include hx
+include p hx
 lemma sum_pos_hahn : 
-  ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    = pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) :=
+  begin
+    haveI := p.finite,
+    exact
+  ∑ i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
+    = pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none)
+  end :=
 begin
   have h_eq_zero : ∀ (i : p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p (some i)) (odp_set_for p (some i)) = 0,
   { intro i,
@@ -184,12 +190,12 @@ begin
     exact hs,
     exact hs,
     sorry },
-  rw tsum_option,
-  rw tsum_congr,
-  rw tsum_zero,
-  rw zero_add,
+  rw fintype.sum_option,
+  rw fintype.sum_congr,
+  rw fintype.sum_eq_zero,
+  rw add_zero,
   apply h_eq_zero,
-  sorry --summable
+  exact (λ x, rfl)
 end
 
 lemma pos_hahn_none : pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) ≤ p.δ :=
@@ -212,6 +218,8 @@ begin
   sorry,
 end
 
+#check preimage_Union
+
 include hδ
 lemma induction_step 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
@@ -219,60 +227,52 @@ lemma induction_step
   diff_private_aux (P₁ ⊗ P₂) 
     (λ ω, prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2))
     (λ ω, prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2)) ε δ :=
-λ s,
+begin
+  intro s,
+  haveI : fintype (option p.index) := @option.fintype _ p.finite,
 calc 
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
-  ... = 
-  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p none).prod univ}
-  + ∑' (i : p.index), 
-    (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p (some i)).prod univ} : 
+  ... = ∑ (i : option p.index), 
+    (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} : 
   begin
+    rw ←tsum_fintype,
     rw ←measure_Union _,
-    rw ←measure_union _,
-    rw ←Union_option (λ i, {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ}),
     apply congr_arg,
-    convert preimage_Union,
+    convert ←preimage_Union,
     rw ←split_set p s,
     sorry,
-    sorry,
-    sorry,
-    sorry,
-    apply p.encodable,
+    apply encodable.fintype.encodable,
     sorry,
   end
-... ≤ ∑' (i : option p.index), 
+... ≤ ∑ (i : option p.index), 
   (ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i) +
   (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i})  : 
 begin
-  refine tsum_mono _ _ _,
-  sorry,-- TODO: summable
-  sorry, -- TODO: summable
+  refine fintype.sum_mono _,
   intro i,
   apply inequality_slice,
   simp,
   apply hM₂,
 end
-... = ∑' (b : option p.index),
+... = ∑ (b : option p.index),
       ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
              s ∩ (odp_set_for p b).prod univ}
-    + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    + ∑' (i : option p.index), (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
+    + ∑ (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
+    + ∑ (i : option p.index), (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
 begin
   unfold pos_hahn,
-  rw [tsum_add, tsum_add],
-  sorry,-- TODO: summable
-  sorry,-- TODO: summable
-  sorry,-- TODO: summable
-  sorry,-- TODO: summable
+  rw [finset.sum_add, finset.sum_add]
 end
-... = ε.exp * ∑' (b : option p.index),
+... = ε.exp * ∑ (b : option p.index),
       (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
              s ∩ (odp_set_for p b).prod univ}
-    + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    + (δ - p.δ) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
-sorry -- Technical issue here: multiplication in ennreal is not continuous -- try finset.sum_hom_rel ?
+    + (∑ (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i))
+    + (δ - p.δ) * ∑ (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
+begin
+  simp only [finset.mul_sum]
+end  
 ... = ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) +
   (δ - p.δ) * P₁ (⋃ (i : option p.index), {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}) : 
@@ -283,18 +283,22 @@ begin
   { rw [←preimage_Union], 
     rw ←split_set p s,
   },
-  rw sum_pos_hahn,
-  rw ←measure_Union _,
-  rw ←measure_Union _,
   congr,
-  exact this,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
+  { rw ←tsum_fintype,
+    rw ←measure_Union _, 
+    congr,
+    exact this, 
+    sorry,
+    sorry,
+    sorry, },
+  { haveI : fintype p.index := p.finite,
+    have := sum_pos_hahn P₁ x₀ x₁ hx M₁ p,
+    convert this, },
+  { rw ←tsum_fintype,
+    rw ←measure_Union _, 
+    sorry,
+    sorry,
+    sorry, }
 end
 ... ≤ ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     p.δ + (δ - p.δ) : 
@@ -313,4 +317,5 @@ begin
   rw add_assoc,
   rw ennreal.add_sub_cancel_of_le,
   exact hδ,
+end
 end

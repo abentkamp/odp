@@ -30,7 +30,7 @@ def output_diff_private (s : set O) :=
 structure odp_partition :=
 (ε δ : ℝ≥0∞)
 (index : Type) 
-[encodable : encodable index] 
+[finite : fintype index] -- We assume finiteness of the ODP partition for now
 (partition : index → set O)
 (ε_for : index → ℝ≥0∞)
 (disjoint : pairwise (disjoint on partition))  
