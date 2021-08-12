@@ -45,7 +45,7 @@ begin
 end
 end
 
-lemma diff_private_aux_min (s : set (O₁ × O₂)) (o₁ : O₁) 
+lemma diff_private_aux_min (s : set (O₁ × O₂)) (hs : measurable_set s) (o₁ : O₁) 
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) : 
   P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s} 
     ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ) :=
@@ -58,6 +58,7 @@ end
 begin
   refine min_le_min (le_refl _) _,
   apply hM₂ o₁ {o₂ : O₂ | (o₁, o₂) ∈ s},
+  apply measurable_prod_mk_left hs,
 end
 ... ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ) :
 begin
@@ -67,8 +68,10 @@ end
 
 section
 include hM₁
-lemma inequality_slice (s : set (O₁ × O₂)) (i : option p.index) 
-  (hs : s ⊆ (odp_set_for p i).prod univ)
+lemma inequality_slice (s : set (O₁ × O₂)) 
+  (hs : measurable_set s)
+  (i : option p.index) 
+  (hsi : s ⊆ (odp_set_for p i).prod univ)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
@@ -97,7 +100,7 @@ begin
   { intros o₁ ho₁,
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
-    exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hs hω₂)).1 }
+    exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 }
 end
 ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
   min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ)
@@ -106,6 +109,7 @@ begin
   apply lintegral_mono,
   intro o₁,
   apply diff_private_aux_min,
+  apply hs,
   apply hM₂,
 end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i,
@@ -180,7 +184,7 @@ begin
   { intros o₁ ho₁,
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
-    exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hs hω₂)).1 },
+    exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 },
 end
 end
 
@@ -244,7 +248,7 @@ lemma induction_step
     (λ ω, prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2))
     (λ ω, prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2)) ε δ :=
 begin
-  intro s,
+  intros s hs,
   haveI : fintype (option p.index) := @option.fintype _ p.finite,
 calc 
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
@@ -269,9 +273,10 @@ begin
   refine fintype.sum_mono _,
   intro i,
   apply @inequality_slice _ _ _ _ P₁ P₂ _ _ _ _ _ _ _ _ _ _ _ hM₁, --TODO: What's going on here
+  { apply measurable_set.inter hs,
+    sorry },
   simp,
-  apply hM₂,
-  apply_instance
+  apply hM₂
 end
 ... = ∑ (b : option p.index),
       ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈

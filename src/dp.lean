@@ -7,7 +7,7 @@ class database_type (X : Type*) :=
 open measure_theory ennreal database_type
 open_locale ennreal
 
-variables {Ω : Type} [measurable_space Ω] (P : measure Ω) {O : Type} {O' : Type}
+variables {Ω : Type} [measurable_space Ω] (P : measure Ω) {O : Type} {O' : Type} [measurable_space O] [measurable_space O']
 
 variables {X : Type} [database_type X] (M : X → Ω → O) (M₀ : Ω → O) (M₁ : Ω → O) (M₀' : Ω → O') (M₁' : Ω → O')
 
@@ -15,7 +15,7 @@ variables (ε δ : ℝ≥0∞)
 
 /- Differential provacy for compositions M₀, M₁ of mechanisms -/
 def diff_private_aux := -- TODO Rename: diff_private_composition
-  ∀ (s : set O),
+  ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
 -- TODO: need to add measurability assumption on s?
@@ -98,11 +98,13 @@ begin
   apply mem_odp_set_for_odp_index
 end
 
-lemma diff_private_aux_map_inj (f : O → O') (hf : function.injective f) : diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
+lemma diff_private_aux_map_inj (f : O → O') (hf : function.injective f) : 
+  diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
 begin
-  intros h s,
+  intros h s hs,
   rw [←set.preimage_image_eq s hf],
-  exact h (f '' s)
+  refine h (f '' s) _,
+  sorry
 end
 
 lemma split_set (p : odp_partition P M) (s : set (O × O')) : s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
