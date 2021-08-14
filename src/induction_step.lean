@@ -72,6 +72,7 @@ lemma inequality_slice (s : set (O₁ × O₂))
   (hs : measurable_set s)
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
+  (h_measurable_M₂₀ : measurable (λ (x : Ω₁ × Ω₂), M₂₀ (M₁ x₀ x.fst) x.snd))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
@@ -83,7 +84,13 @@ calc
 begin
   rw measure.prod_apply,
   refl,
-  sorry
+  show measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s},
+  { apply measurable.prod_mk,
+    { apply measurable.comp,
+      apply hM₁,
+      apply measurable_fst },
+    exact h_measurable_M₂₀,
+    exact hs }
 end
 ... = ∫⁻ (o₁ : O₁), P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
@@ -242,6 +249,7 @@ end
 
 include hδ hM₁
 lemma induction_step 
+  (h_measurable_M₂₀ : measurable (λ (x : Ω₁ × Ω₂), M₂₀ (M₁ x₀ x.fst) x.snd))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
   diff_private_aux (P₁ ⊗ P₂) 
@@ -276,6 +284,7 @@ begin
   { apply measurable_set.inter hs,
     sorry },
   simp,
+  apply h_measurable_M₂₀,
   apply hM₂
 end
 ... = ∑ (b : option p.index),
