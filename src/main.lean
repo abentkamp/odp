@@ -63,10 +63,6 @@ begin
         (λ ω, let o := (𝒜 [] ε δ).M ((𝒜 [] ε δ).x 1) ω.1 in
               (o, algo_step 𝒜 o n 1 ε δ ω.2))
         ε δ,
-      have : measurable
-        (λ (x : Ω × (fin n → Ω)),
-          let o := ((𝒜 list.nil ε δ).M ((𝒜 list.nil ε δ).x 0) x.fst)
-          in algo_step 𝒜 o n 0 ε δ x.snd), sorry,
       { exact @induction_step _ _ _ _ P (P ^^ n) _ _ _ _ _ _ _ _ 
           ((𝒜 list.nil ε δ).x 0) 
           ((𝒜 list.nil ε δ).x 1) 
@@ -74,7 +70,7 @@ begin
           (𝒜 [] ε δ).odp_partition ε δ
           (𝒜 list.nil ε δ).hδ
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
-          (λ o ω, algo_step 𝒜 o n 1 ε δ ω) this ih' },
+          (λ o ω, algo_step 𝒜 o n 1 ε δ ω) sorry ih' },
       simp only [odp_composition_succ] {zeta := ff},
       apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
       apply injective_head_tail,

@@ -72,7 +72,7 @@ lemma inequality_slice (s : set (O₁ × O₂))
   (hs : measurable_set s)
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
-  (h_measurable_M₂₀ : measurable (λ (x : Ω₁ × Ω₂), M₂₀ (M₁ x₀ x.fst) x.snd))
+  (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
@@ -89,15 +89,25 @@ begin
     { apply measurable.comp,
       apply hM₁,
       apply measurable_fst },
-    exact h_measurable_M₂₀,
+    show measurable ((λ (a : O₁ × Ω₂), M₂₀ a.1 a.2) 
+      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₀ ω.1, ω.2))),
+    { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
+      apply measurable.comp (hM₁ _) measurable_fst,
+      apply measurable_snd },
     exact hs }
 end
 ... = ∫⁻ (o₁ : O₁), P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
 begin
   rw lintegral_map,
-  sorry,
-  sorry,
+  have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
+  { apply measurable.prod,
+    apply measurable_fst,
+    apply h_measurable_M₂₀,
+    apply hs },
+  apply measurable_measure_prod_mk_left this,
+  apply_instance,
+  apply hM₁,
 end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i, P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
@@ -249,7 +259,7 @@ end
 
 include hδ hM₁
 lemma induction_step 
-  (h_measurable_M₂₀ : measurable (λ (x : Ω₁ × Ω₂), M₂₀ (M₁ x₀ x.fst) x.snd))
+  (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
   diff_private_aux (P₁ ⊗ P₂) 
