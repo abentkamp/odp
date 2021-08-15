@@ -73,6 +73,7 @@ lemma inequality_slice (s : set (O₁ × O₂))
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
   (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
+  (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
@@ -113,7 +114,7 @@ end
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
 begin
   rw set_lintegral_nonzero,
-  sorry,
+  apply measurable_set_odp_set_for,
   { intros o₁ ho₁,
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
@@ -134,7 +135,7 @@ end
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ :
 begin
   apply set_lintegral_fun_congr,
-  sorry,
+  apply measurable_set_odp_set_for,
   intros ω₁ hω₁,
   simp_rw εusage_eq_εusage_for hω₁,
 end
@@ -145,10 +146,23 @@ end
 begin
   rw [lintegral_add, lintegral_const, measure.restrict_apply_univ, measure.map_apply],
   refl,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
+  apply hM₁,
+  apply measurable_set_odp_set_for,
+  apply measurable.min measurable_const,
+  apply measurable.mul measurable_const,
+  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₁ oω.1 oω.2) ∈ s}, -- This was tricky!
+    { apply measurable.prod,
+      apply measurable_fst,
+      apply h_measurable_M₂₁,
+      apply hs }, --basically copied from above...
+    apply measurable_measure_prod_mk_left this,
+    apply_instance },
+  sorry, --TODO: has_measurable_mul₂ ℝ≥0∞ !
+  apply_instance,
+  apply_instance,
+  apply_instance,
+  apply_instance,
+  apply measurable_const,
 end
 ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
       min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
@@ -260,6 +274,7 @@ end
 include hδ hM₁
 lemma induction_step 
   (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
+  (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
   diff_private_aux (P₁ ⊗ P₂) 
@@ -295,7 +310,8 @@ begin
     sorry },
   simp,
   apply h_measurable_M₂₀,
-  apply hM₂
+  apply h_measurable_M₂₁,
+  apply hM₂,
 end
 ... = ∑ (b : option p.index),
       ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈

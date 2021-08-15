@@ -32,10 +32,13 @@ structure odp_partition :=
 (index : Type) 
 [finite : fintype index] -- We assume finiteness of the ODP partition for now
 (partition : index → set O)
+(measurable_partition : ∀ i, measurable_set (partition i))
 (ε_for : index → ℝ≥0∞)
 (disjoint : pairwise (disjoint on partition))  
 (dp : diff_private P M ε δ)
 (odp : ∀ i, output_diff_private P M (ε_for i) (partition i))
+
+-- TODO: Example instance
 
 open_locale classical
 noncomputable theory
@@ -87,6 +90,18 @@ begin
   { simp only [odp_set_for, odp_index, h, dif_pos],
     exact classical.some_spec2 (λ i, o ∈ p.partition i) (λ a h, h) },
   { simp [odp_set_for, odp_index, h, dif_neg] }
+end
+
+lemma measurable_set_odp_set_for (p : odp_partition P M) (i : option p.index) : 
+  measurable_set (odp_set_for p i) :=
+begin
+  haveI := p.finite,
+  cases i,
+  { apply measurable_set.diff (measurable_set.univ)
+      (measurable_set.Union _),
+    apply encodable.fintype.encodable,
+    apply p.measurable_partition },
+  { apply p.measurable_partition }
 end
 
 lemma union_odp_set_for_eq_univ (p : odp_partition P M) : (⋃ i, odp_set_for p i) = set.univ :=
