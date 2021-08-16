@@ -67,7 +67,7 @@ begin
 end
 
 section
-include hM₁
+include hM₁ hε
 lemma inequality_slice (s : set (O₁ × O₂)) 
   (hs : measurable_set s)
   (i : option p.index) 
@@ -157,7 +157,7 @@ begin
       apply hs }, --basically copied from above...
     apply measurable_measure_prod_mk_left this,
     apply_instance },
-  sorry, --TODO: has_measurable_mul₂ ℝ≥0∞ !
+  apply ennreal.has_measurable_mul₂,
   apply_instance,
   apply_instance,
   apply_instance,
@@ -173,7 +173,7 @@ begin
   refine measure_theory.lintegral_mono' _ (le_refl _),
   refine measure.restrict_mono (λ x hx, hx) _,
   apply @pos_hahn_prop _ _ P₁ _ _ _ _ _ x₀ x₁  M₁ hM₁ _,
-  sorry
+  apply εusage_for_lt_infty
 end
  ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
       ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
@@ -271,7 +271,7 @@ begin
   sorry,
 end
 
-include hδ hM₁
+include hδ hM₁ hε
 lemma induction_step 
   (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
   (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
@@ -306,6 +306,7 @@ begin
   refine fintype.sum_mono _,
   intro i,
   apply @inequality_slice _ _ _ _ P₁ P₂ _ _ _ _ _ _ _ _ _ _ _ hM₁, --TODO: What's going on here
+  apply hε,
   { apply measurable_set.inter hs,
     sorry },
   simp,

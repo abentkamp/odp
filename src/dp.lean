@@ -29,11 +29,13 @@ def output_diff_private (s : set O) :=
 
 structure odp_partition :=
 (ε δ : ℝ≥0∞)
+(ε_lt_infty : ε < ∞)
 (index : Type) 
 [finite : fintype index] -- We assume finiteness of the ODP partition for now
 (partition : index → set O)
 (measurable_partition : ∀ i, measurable_set (partition i))
 (ε_for : index → ℝ≥0∞)
+(ε_for_lt_infty : ∀ i, ε_for i < ∞)
 (disjoint : pairwise (disjoint on partition))  
 (dp : diff_private P M ε δ)
 (odp : ∀ i, output_diff_private P M (ε_for i) (partition i))
@@ -51,6 +53,14 @@ def odp_index (p : odp_partition P M) (o : O) : option p.index :=
 def εusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 | none := p.ε
 | (some i) :=  p.ε_for i
+
+lemma εusage_for_lt_infty (p : odp_partition P M) (i : option p.index) : 
+  εusage_for p i < ∞ := 
+begin
+  cases i,
+  apply p.ε_lt_infty,
+  apply p.ε_for_lt_infty,
+end
 
 def εusage (p : odp_partition P M) (o : O) := εusage_for p (odp_index p o)
 

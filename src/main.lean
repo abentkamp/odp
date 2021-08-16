@@ -12,7 +12,7 @@ local infix ` ⊗ `:50  := measure.prod
 variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P] (O : Type) [measurable_space O]
 variables (X : Type) [database_type X] 
 variables {P} {O} {X} (𝒜 : adversary P O X)
-variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (ω : Ω)(ωs : list Ω)
+variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (hε : ε < ∞) (ω : Ω)(ωs : list Ω)
 
 noncomputable def algo_step (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=     
   let 𝒜_choice : adversary_choice P O X ε δ := 𝒜 list.nil ε δ in
@@ -21,6 +21,7 @@ noncomputable def algo_step (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : f
   let 𝒜' := λ (os : list O), 𝒜 (o :: os) in 
   odp_composition 𝒜' n bit ε' δ' ω
 
+include hε
 theorem main (n : ℕ) :
 diff_private_aux (P ^^ n)
   (odp_composition 𝒜 n 0 ε δ)
@@ -49,7 +50,8 @@ begin
         let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o,
         let  δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_partition.δ,
         let  𝒜' : list O → Π (ε δ : ℝ≥0∞), adversary_choice P O X ε δ := λ (os : list O), 𝒜 (o :: os),
-        exact ih 𝒜' ε' δ' },
+        have hε' : ε' < ∞ := lt_of_le_of_lt (ennreal.sub_le_self _ _) hε,
+        exact ih 𝒜' ε' δ' hε' },
     have h_diff_private_aux_PPn : diff_private_aux (P ⊗ P ^^ n)
       (λ ω, odp_composition 𝒜 (n+1) 0 ε δ (vec_cons ω.1 ω.2))
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
@@ -68,6 +70,7 @@ begin
           ((𝒜 list.nil ε δ).x 1) 
           (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω) hM
           (𝒜 [] ε δ).odp_partition ε δ
+          hε
           (𝒜 list.nil ε δ).hδ
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
           (λ o ω, algo_step 𝒜 o n 1 ε δ ω) sorry sorry ih' },
