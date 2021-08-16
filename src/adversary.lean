@@ -16,8 +16,15 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 (x : fin 2 → X)
 (hx : neighboring (x 0) (x 1))
 
-
 def adversary := Π (outputs : list O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ
+
+lemma εusage_for_le_ε {ε δ : ℝ≥0∞} (𝒜_choice : adversary_choice P O X ε δ) (i : option 𝒜_choice.odp_partition.index) : 
+  εusage_for 𝒜_choice.odp_partition i ≤ ε := 
+begin 
+  cases i,
+  apply 𝒜_choice.hε,
+  apply 𝒜_choice.hε_for
+end
 
 variables {P} {O} {X} (𝒜 : adversary P O X)
 

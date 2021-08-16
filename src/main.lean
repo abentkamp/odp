@@ -73,7 +73,9 @@ begin
           hε
           (𝒜 list.nil ε δ).hδ
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
-          (λ o ω, algo_step 𝒜 o n 1 ε δ ω) sorry sorry ih' },
+          (λ o ω, algo_step 𝒜 o n 1 ε δ ω)
+          (λ i, εusage_for_le_ε _ _ _ _ _) sorry sorry 
+          ih' },
       simp only [odp_composition_succ] {zeta := ff},
       apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
       apply injective_head_tail,

@@ -72,6 +72,7 @@ lemma inequality_slice (s : set (O₁ × O₂))
   (hs : measurable_set s)
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
+  (h_εusage_for : εusage_for p i ≤ ε)
   (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
   (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
@@ -196,7 +197,7 @@ begin
   rw [lintegral_const_mul, measure.restrict_smul, lintegral_smul_measure],
   rw [←mul_assoc, ←exp_add, sub_add_cancel_of_le],
   rw [lintegral_one, measure.restrict_apply_univ],
-  sorry, -- TODO: εusage_for p i ≤ ε
+  apply h_εusage_for,
   sorry,
 end
  ... = 
@@ -273,6 +274,7 @@ end
 
 include hδ hM₁ hε
 lemma induction_step 
+  (h_εusage_for : ∀ i, εusage_for p i ≤ ε)
   (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
   (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
@@ -310,6 +312,7 @@ begin
   { apply measurable_set.inter hs,
     sorry },
   simp,
+  apply h_εusage_for,
   apply h_measurable_M₂₀,
   apply h_measurable_M₂₁,
   apply hM₂,
