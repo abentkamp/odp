@@ -102,6 +102,7 @@ begin
   { simp [odp_set_for, odp_index, h, dif_neg] }
 end
 
+@[measurability]
 lemma measurable_set_odp_set_for (p : odp_partition P M) (i : option p.index) : 
   measurable_set (odp_set_for p i) :=
 begin

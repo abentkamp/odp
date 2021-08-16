@@ -242,7 +242,8 @@ end
 end
 end
 
-include p hx
+section
+include p hx hM₁
 lemma sum_pos_hahn : 
   begin
     haveI := p.finite,
@@ -259,13 +260,13 @@ begin
     rw [measure.restrict_apply, measure.restrict_apply],
     rw [measure.map_apply, measure.smul_apply, measure.map_apply],
     refine p.odp i x₀ x₁ (s ∩ odp_set_for p (some i)) (inter_subset_right _ _) hx,
-    sorry,
-    sorry,
-    sorry,
-    sorry,
+    apply hM₁,
+    { measurability },
+    exact hM₁ _,
+    { measurability },
     exact hs,
     exact hs,
-    sorry },
+    { measurability } },
   rw fintype.sum_option,
   rw fintype.sum_congr,
   rw fintype.sum_eq_zero,
@@ -273,14 +274,21 @@ begin
   apply h_eq_zero,
   exact (λ x, rfl)
 end
+end
 
+section
+include hx
 lemma pos_hahn_none : pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) ≤ p.δ :=
 begin
   have := p.dp x₀ x₁ (odp_set_for p none) hx,
   rw [pos_hahn], 
+  haveI : finite_measure ((measure.map (λ (ω : Ω₁), M₁ x₀ ω)) P₁) :=
+  sorry,
+  haveI : finite_measure ((εusage_for p none).exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) := 
+  sorry,
   rcases @measure.sub_apply_finite _ _
     (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁)
-    ((εusage_for p none).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) sorry sorry _ _
+    ((εusage_for p none).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) _ _ _ _
     with ⟨t, ht⟩,
   rw ht,
   apply ennreal.sub_le_iff_le_add.2,
@@ -293,8 +301,9 @@ begin
   sorry,
   sorry,
 end
+end
 
-include hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
+include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 lemma induction_step 
   (h_εusage_for : ∀ i, εusage_for p i ≤ ε)
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
@@ -374,7 +383,7 @@ begin
     sorry,
     sorry, },
   { haveI : fintype p.index := p.finite,
-    have := sum_pos_hahn P₁ x₀ x₁ hx M₁ p,
+    have := sum_pos_hahn P₁ x₀ x₁ hx M₁ p hM₁,
     convert this, },
   { rw ←tsum_fintype,
     rw ←measure_Union _, 
