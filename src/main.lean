@@ -65,17 +65,19 @@ begin
         (λ ω, let o := (𝒜 [] ε δ).M ((𝒜 [] ε δ).x 1) ω.1 in
               (o, algo_step 𝒜 o n 1 ε δ ω.2))
         ε δ,
-      { exact @induction_step _ _ _ _ P (P ^^ n) _ _ _ _ _ _ _ _ 
+      { apply induction_step P (P ^^ n)
           ((𝒜 list.nil ε δ).x 0) 
-          ((𝒜 list.nil ε δ).x 1) 
-          (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω) hM
-          (𝒜 [] ε δ).odp_partition ε δ
-          hε
-          (𝒜 list.nil ε δ).hδ
+          ((𝒜 list.nil ε δ).x 1)
+          (𝒜 list.nil ε δ).hx (λ x ω, (𝒜 [] ε δ).M x ω)-- hM,
+          (𝒜 [] ε δ).odp_partition hM
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
-          (λ o ω, algo_step 𝒜 o n 1 ε δ ω)
-          (λ i, εusage_for_le_ε _ _ _ _ _) sorry sorry 
-          ih' },
+          (λ o ω, algo_step 𝒜 o n 1 ε δ ω),
+        sorry, -- measurablity,
+        sorry, -- measurablity,
+        exact hε,
+        exact (𝒜 list.nil ε δ).hδ,
+        exact (λ i, εusage_for_le_ε _ _ _ _ _),
+        exact ih' },
       simp only [odp_composition_succ] {zeta := ff},
       apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
       apply injective_head_tail,

@@ -14,9 +14,12 @@ variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂]
 variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P₁] [probability_measure P₂]
 variables {O₁ O₂ : Type} [measurable_space O₁] [measurable_space O₂]
 variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
-variables (M₁ : X → Ω₁ → O₁) [hM₁ : ∀ x, measurable (M₁ x)] (p : odp_partition P₁ M₁)
-variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : p.δ ≤ δ)
+variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
+variables (hM₁ : ∀ x, measurable (M₁ x))
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
+variables (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
+variables (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
+variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : p.δ ≤ δ)
 
 noncomputable def pos_hahn : measure O₁ := 
 measure.map (λ ω, M₁ x₀ ω) P₁ - ε.exp • measure.map (λ ω, M₁ x₁ ω) P₁
@@ -67,26 +70,37 @@ begin
 end
 
 section
-include hM₁ hε
+include hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 lemma inequality_slice (s : set (O₁ × O₂)) 
   (hs : measurable_set s)
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
   (h_εusage_for : εusage_for p i ≤ ε)
-  (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
-  (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
     + pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :=
-calc
-  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
- = ∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂) ∈ s} ∂P₁ : 
 begin
-  rw measure.prod_apply,
-  refl,
-  show measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s},
+  -- First some measurability results:
+  -- TODO: Avoid repetitions
+  have h_measurable_M₂₀' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₀ a ω₂) ∈ s}),
+  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
+      { apply measurable.prod,
+        apply measurable_fst,
+        apply h_measurable_M₂₀,
+        apply hs },
+      apply measurable_measure_prod_mk_left this,
+      apply_instance },
+  have h_measurable_M₂₁' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₁ a ω₂) ∈ s}),
+  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₁ oω.1 oω.2) ∈ s}, -- This was tricky!
+    { apply measurable.prod,
+      apply measurable_fst,
+      apply h_measurable_M₂₁,
+      apply hs },
+    apply measurable_measure_prod_mk_left this,
+    apply_instance },
+  have h_measurable_set_0 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s},
   { apply measurable.prod_mk,
     { apply measurable.comp,
       apply hM₁,
@@ -96,19 +110,32 @@ begin
     { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
       apply measurable.comp (hM₁ _) measurable_fst,
       apply measurable_snd },
-    exact hs }
+    exact hs },
+  have h_measurable_set_1 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈ s},
+  { apply measurable.prod_mk,
+    { apply measurable.comp,
+      apply hM₁,
+      apply measurable_fst },
+    show measurable ((λ (a : O₁ × Ω₂), M₂₁ a.1 a.2) 
+      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.1, ω.2))),
+    { apply measurable.comp h_measurable_M₂₁ (measurable.prod_mk _ _),
+      apply measurable.comp (hM₁ _) measurable_fst,
+      apply measurable_snd },
+    exact hs },
+  -- And now the actual calculation: 
+  exact calc
+  (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
+ = ∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂) ∈ s} ∂P₁ : 
+begin
+  rw measure.prod_apply,
+  refl,
+  exact h_measurable_set_0
 end
 ... = ∫⁻ (o₁ : O₁), P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
 begin
   rw lintegral_map,
-  have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
-  { apply measurable.prod,
-    apply measurable_fst,
-    apply h_measurable_M₂₀,
-    apply hs },
-  apply measurable_measure_prod_mk_left this,
-  apply_instance,
+  exact h_measurable_M₂₀',
   apply hM₁,
 end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i, P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
@@ -151,13 +178,7 @@ begin
   apply measurable_set_odp_set_for,
   apply measurable.min measurable_const,
   apply measurable.mul measurable_const,
-  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₁ oω.1 oω.2) ∈ s}, -- This was tricky!
-    { apply measurable.prod,
-      apply measurable_fst,
-      apply h_measurable_M₂₁,
-      apply hs }, --basically copied from above...
-    apply measurable_measure_prod_mk_left this,
-    apply_instance },
+  apply h_measurable_M₂₁',
   apply ennreal.has_measurable_mul₂,
   apply_instance,
   apply_instance,
@@ -198,7 +219,7 @@ begin
   rw [←mul_assoc, ←exp_add, sub_add_cancel_of_le],
   rw [lintegral_one, measure.restrict_apply_univ],
   apply h_εusage_for,
-  sorry,
+  exact h_measurable_M₂₁',
 end
  ... = 
  ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
@@ -209,14 +230,15 @@ begin
   rw lintegral_map,
   rw measure.prod_apply,
   refl,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
+  exact h_measurable_set_1,
+  exact h_measurable_M₂₁',
+  exact hM₁ _,
+  apply measurable_set_odp_set_for,
   { intros o₁ ho₁,
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 },
+end
 end
 end
 
@@ -272,11 +294,9 @@ begin
   sorry,
 end
 
-include hδ hM₁ hε
+include hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 lemma induction_step 
   (h_εusage_for : ∀ i, εusage_for p i ≤ ε)
-  (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
-  (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
   (hM₂ : ∀ o₁ : O₁, diff_private_aux P₂ (M₂₀ o₁) (M₂₁ o₁) 
     (ε - εusage p o₁) (δ - p.δ)) : 
   diff_private_aux (P₁ ⊗ P₂) 
@@ -307,14 +327,15 @@ calc
 begin
   refine fintype.sum_mono _,
   intro i,
-  apply @inequality_slice _ _ _ _ P₁ P₂ _ _ _ _ _ _ _ _ _ _ _ hM₁, --TODO: What's going on here
+  apply inequality_slice,
+  apply hM₁,
+  apply h_measurable_M₂₀,
+  apply h_measurable_M₂₁,
   apply hε,
   { apply measurable_set.inter hs,
     sorry },
   simp,
   apply h_εusage_for,
-  apply h_measurable_M₂₀,
-  apply h_measurable_M₂₁,
   apply hM₂,
 end
 ... = ∑ (b : option p.index),
