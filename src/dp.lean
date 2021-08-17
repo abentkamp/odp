@@ -144,15 +144,6 @@ begin
   apply mem_odp_set_for_odp_index
 end
 
-lemma diff_private_aux_map_inj (f : O → O') (hf : function.injective f) : 
-  diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
-begin
-  intros h s hs,
-  rw [←set.preimage_image_eq s hf],
-  refine h (f '' s) _,
-  sorry
-end
-
 lemma split_set (p : odp_partition P M) (s : set (O × O')) : s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
 calc s = s ∩ (set.prod set.univ set.univ) : by simp
 ... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) : by rw ←union_odp_set_for_eq_univ _

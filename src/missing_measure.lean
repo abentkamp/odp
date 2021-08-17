@@ -1,6 +1,7 @@
 
 import measure_theory.pi
 import measure_theory.giry_monad
+import data.matrix.notation
 
 open measure_theory 
 
@@ -134,4 +135,4 @@ instance pi.probability_measure {α : Type*} [measurable_space α] (P : measure 
   rw [←set.pi_univ, measure.pi_pi, finset.prod_eq_one], 
   simp [probability_measure.measure_univ], 
   measurability, 
-end⟩ 
+end⟩

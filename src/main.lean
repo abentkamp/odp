@@ -21,6 +21,29 @@ noncomputable def algo_step (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : f
   let 𝒜' := λ (os : list O), 𝒜 (o :: os) in 
   odp_composition 𝒜' n bit ε' δ' ω
 
+--TODO: move
+def vec_cons.equiv (n : ℕ) : O × (fin n → O) ≃ (fin n.succ → O) :=
+⟨λ x, vec_cons x.1 x.2,
+ λ x, (vec_head x, vec_tail x), 
+ begin intro x, simp end, 
+ begin intro x, simp end⟩
+
+lemma diff_private_aux_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
+  let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
+  diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
+begin
+  intros f h s hs,
+  rw [←set.preimage_image_eq s (injective_head_tail n)],
+  refine h (f '' s) _,
+  have : measurable_set ((λ x : _ × _, vec_cons x.1 x.2) ⁻¹' s),
+  { apply measurable.fin_cons,
+    apply measurable_fst,
+    apply measurable_snd,
+    exact hs },
+  convert this,
+  exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
+end
+
 include hε
 theorem main (n : ℕ) :
 diff_private_aux (P ^^ n)
@@ -77,8 +100,7 @@ begin
         exact (λ i, εusage_for_le_ε _ _ _ _ _),
         exact ih' },
       simp only [odp_composition_succ] {zeta := ff},
-      apply diff_private_aux_map_inj _ _ _ _ (λ o, (vec_head o, vec_tail o)),
-      apply injective_head_tail,
+      apply diff_private_aux_map_vec_head_vec_tail,
       convert h_ind_step,
       simp only [tail_cons, head_cons, algo_step], 
       simp [algo_step],
