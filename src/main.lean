@@ -55,9 +55,7 @@ begin
     have h_diff_private_aux_PPn : diff_private_aux (P ⊗ P ^^ n)
       (λ ω, odp_composition 𝒜 (n+1) 0 ε δ (vec_cons ω.1 ω.2))
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
-    { haveI : probability_measure (P ^^ n) := 
-        sorry, -- TODO
-      have hM : ∀ (x : X), measurable ((𝒜 list.nil ε δ).M x) :=
+    { have hM : ∀ (x : X), measurable ((𝒜 list.nil ε δ).M x) :=
         sorry, 
       have h_ind_step : diff_private_aux (P ⊗ P ^^ n)
         (λ ω, let o := (𝒜 [] ε δ).M ((𝒜 [] ε δ).x 0) ω.1 in 

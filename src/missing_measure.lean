@@ -127,3 +127,11 @@ lemma measure_theory.finite_measure.smul {α : Type*} [measurable_space α] (μ 
   apply ennreal.mul_lt_top ha,
   apply measure_lt_top,
 end⟩ 
+
+instance pi.probability_measure {α : Type*} [measurable_space α] (P : measure α) (n : ℕ) [probability_measure P] : 
+  probability_measure (P ^^ n) :=
+⟨begin 
+  rw [←set.pi_univ, measure.pi_pi, finset.prod_eq_one], 
+  simp [probability_measure.measure_univ], 
+  measurability, 
+end⟩ 
