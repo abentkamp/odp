@@ -77,6 +77,26 @@ begin
   exact p.disjoint i j h ⟨hi, hj⟩,
 end
 
+lemma pairwise_disjoint_on_odp_set_for {p : odp_partition P M} : pairwise (disjoint on odp_set_for p) :=
+begin
+  intros i j hij a ha,
+  cases i,
+  { cases j,
+    { exact hij rfl },
+    { apply ((set.mem_diff _).1 ha.1).2,
+      rw set.mem_Union,
+      exact ⟨j, ha.2⟩ } },
+  { cases j, 
+    { apply ((set.mem_diff _).1 ha.2).2,
+      rw set.mem_Union,
+      exact ⟨i, ha.1⟩ }, 
+    { apply p.disjoint i j,
+      intro h,
+      rw h at hij,
+      apply hij rfl,
+      apply ha } }
+end
+
 lemma odp_index_of_mem_partition {o : O} {p : odp_partition P M} {i : p.index}
   (hi : o ∈ p.partition i) : odp_index p o = some i :=
 begin

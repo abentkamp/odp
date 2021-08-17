@@ -4,6 +4,7 @@ import measure_theory.measure_space
 import missing_unsigned_hahn
 import missing_infinite_sum
 import missing_finset
+import missing_measure
 
 open measure_theory ennreal database_type set
 open_locale ennreal
@@ -277,30 +278,62 @@ end
 end
 
 section
-include hx
+include hx hM₁
 lemma pos_hahn_none : pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) ≤ p.δ :=
 begin
   have := p.dp x₀ x₁ (odp_set_for p none) hx,
   rw [pos_hahn], 
-  haveI : finite_measure ((measure.map (λ (ω : Ω₁), M₁ x₀ ω)) P₁) :=
-  sorry,
+  haveI : ∀ x, finite_measure ((measure.map (λ (ω : Ω₁), M₁ x ω)) P₁) :=
+    λ x, measure_theory.finite_measure.map _ (hM₁ _),
   haveI : finite_measure ((εusage_for p none).exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) := 
-  sorry,
+  begin 
+    apply measure_theory.finite_measure.smul,
+    apply ennreal.exp_lt_top_of_lt_top,
+    apply εusage_for_lt_infty,
+  end,
   rcases @measure.sub_apply_finite _ _
     (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁)
     ((εusage_for p none).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) _ _ _ _
-    with ⟨t, ht⟩,
-  rw ht,
+    with ⟨t, ht₁, ht₂⟩,
+  rw ht₂,
   apply ennreal.sub_le_iff_le_add.2,
   rw [add_comm, measure.map_apply, measure.smul_apply, 
     measure.map_apply],
   apply p.dp x₀ x₁ (odp_set_for p none ∩ t) hx,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
-  sorry,
+  measurability,
 end
+end
+
+--TODO: move
+lemma pairwise_disjoint_on_preimage {ι α β : Type*} (f : α → β) (s : ι → set β) (h : pairwise (disjoint on s)) : 
+  pairwise (disjoint on (λ i, f ⁻¹' (s i))) :=
+begin
+  intros i j hij a ha,
+  apply h i j hij (set.mem_inter _ _),
+  exact f a,
+  apply ((set.mem_inter_iff _ _ _).1 ha).1,
+  apply ((set.mem_inter_iff _ _ _).1 ha).2,
+end
+
+--TODO: move
+lemma pairwise_disjoint_on_inter {ι β : Type*} (s : ι → set β) (t : set β) (h : pairwise (disjoint on s)) : 
+  pairwise (disjoint on λ i, t ∩ s i) :=
+begin
+  intros i j hij a ha,
+  apply h i j hij (set.mem_inter _ _),
+  exact mem_of_mem_inter_right ha.1,
+  exact mem_of_mem_inter_right ha.2,
+end
+
+--TODO: move
+lemma pairwise_disjoint_on_prod {ι α β : Type*} (s : ι → set α) (t : set β) (h : pairwise (disjoint on s)) : 
+  pairwise (disjoint on λ i, (s i).prod t) :=
+begin
+  intros i j hij a ha,
+  apply h i j hij (set.mem_inter _ _),
+  exact a.1,
+  apply (set.mem_prod.2 ha.1).1,
+  apply (set.mem_prod.2 ha.2).1,
 end
 
 include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
@@ -314,6 +347,33 @@ lemma induction_step
 begin
   intros s hs,
   haveI : fintype (option p.index) := @option.fintype _ p.finite,
+  -- Some measurability results (TODO: Deduplicate with above)
+  have measurable_set_preimage_s_inter₀ : ∀ (i : option p.index), measurable_set
+    {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ},
+  { intro i,
+    apply measurable.prod_mk,
+    { apply measurable.comp,
+      apply hM₁,
+      apply measurable_fst },
+    show measurable ((λ (a : O₁ × Ω₂), M₂₀ a.1 a.2) 
+      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₀ ω.1, ω.2))),
+    { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
+      apply measurable.comp (hM₁ _) measurable_fst,
+      apply measurable_snd },
+    measurability },
+  have measurable_set_preimage_s_inter₁ : ∀ (i : option p.index), measurable_set
+    {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ},
+  { intro i,
+    apply measurable.prod_mk,
+    { apply measurable.comp,
+      apply hM₁,
+      apply measurable_fst },
+    show measurable ((λ (a : O₁ × Ω₂), M₂₁ a.1 a.2) 
+      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.1, ω.2))),
+    { apply measurable.comp h_measurable_M₂₁ (measurable.prod_mk _ _),
+      apply measurable.comp (hM₁ _) measurable_fst,
+      apply measurable_snd },
+    measurability },
 calc 
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
@@ -325,9 +385,12 @@ calc
     apply congr_arg,
     convert ←preimage_Union,
     rw ←split_set p s,
-    sorry,
+    exact measurable_set_preimage_s_inter₀,
     apply encodable.fintype.encodable,
-    sorry,
+    { apply pairwise_disjoint_on_preimage,
+      apply pairwise_disjoint_on_inter,
+      apply pairwise_disjoint_on_prod (odp_set_for p) univ,
+      apply pairwise_disjoint_on_odp_set_for, }
   end
 ... ≤ ∑ (i : option p.index), 
   (ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} +
@@ -341,8 +404,7 @@ begin
   apply h_measurable_M₂₀,
   apply h_measurable_M₂₁,
   apply hε,
-  { apply measurable_set.inter hs,
-    sorry },
+  { measurability },
   simp,
   apply h_εusage_for,
   apply hM₂,
@@ -379,17 +441,21 @@ begin
     rw ←measure_Union _, 
     congr,
     exact this, 
-    sorry,
-    sorry,
-    sorry, },
+    apply measurable_set_preimage_s_inter₁,
+    apply encodable.fintype.encodable,
+    { apply pairwise_disjoint_on_preimage, -- TODO: Deduplicate
+      apply pairwise_disjoint_on_inter,
+      apply pairwise_disjoint_on_prod (odp_set_for p) univ,
+      apply pairwise_disjoint_on_odp_set_for, }, },
   { haveI : fintype p.index := p.finite,
     have := sum_pos_hahn P₁ x₀ x₁ hx M₁ p hM₁,
     convert this, },
   { rw ←tsum_fintype,
     rw ←measure_Union _, 
-    sorry,
-    sorry,
-    sorry, }
+    { measurability },
+    apply encodable.fintype.encodable,
+    { apply pairwise_disjoint_on_preimage,
+      apply pairwise_disjoint_on_odp_set_for, } }
 end
 ... ≤ ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     p.δ + (δ - p.δ) : 
@@ -397,7 +463,8 @@ begin
   refine add_le_add _ _,
   { refine add_le_add_left _ _,
     apply pos_hahn_none,
-    apply hx },
+    apply hx,
+    apply hM₁ },
   { convert ennreal.mul_le_mul _ _,
     exact (mul_one _).symm,
     exact le_refl _,

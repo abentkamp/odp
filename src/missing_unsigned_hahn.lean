@@ -57,7 +57,7 @@ end
 
 lemma measure.sub_apply_finite {α : Type*} [measurable_space α] (μ ν : measure α) 
   [finite_measure μ] [finite_measure ν] (s : set α) (hs : measurable_set s) : 
-  ∃ t, (μ - ν) s = μ (s ∩ t) - ν (s ∩ t) :=
+  ∃ t, measurable_set t ∧ (μ - ν) s = μ (s ∩ t) - ν (s ∩ t) :=
 begin
   rcases @hahn_decomposition _ _ μ ν _ _ with ⟨t, ht, ht₁, ht₂⟩,
   use t,
@@ -78,6 +78,8 @@ begin
   rw measure.sub_eq_zero_of_le μ_le_ν,
   simp only [measure.coe_zero, pi.zero_apply, zero_add],
   rw [measure.restrict_apply, measure.restrict_apply],
+  refine ⟨ht, _⟩,
+  refl,
   apply hs,
   apply hs,
   apply hs,
