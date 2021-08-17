@@ -94,11 +94,10 @@ begin
       rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
       revert s,
       exact h_diff_private_aux_PPn,
-    
       sorry, --measurability
       sorry, --measurability
       sorry, --measurability
       sorry, --measurability
-      sorry, --sigma-finiteness
+      apply_instance
    } }
 end
