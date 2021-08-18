@@ -34,6 +34,7 @@ begin
   exact hf₂ ⟨k, nat.lt_of_succ_lt_succ hk⟩
 end 
 
+@[measurability]
 lemma measurable.fin_cons {n : ℕ} {α : fin n.succ → Type} {β : Type} [∀ i, measurable_space (α i)] [measurable_space β]
   {f : β → α 0} {g : β → Π (i : fin n), α i.succ}
   (hf : measurable f) (hg : measurable g) :
@@ -43,6 +44,22 @@ begin
   apply hf,
   simp_rw fin.tail_cons,
   apply hg,
+end
+
+@[measurability]
+lemma measurable.vec_head {n : ℕ} {α : Type*} [measurable_space α] :
+  measurable (λ (x : fin (n + 1) → α), matrix.vec_head x) :=
+begin
+  unfold matrix.vec_head,
+  measurability,
+end
+
+@[measurability]
+lemma measurable.vec_tail {n : ℕ} {α : Type*} [measurable_space α] :
+  measurable (λ (x : fin (n + 1) → α), matrix.vec_tail x) :=
+begin
+  unfold matrix.vec_tail,
+  measurability,
 end
 
 lemma measure.pi_succ {n : ℕ} (α : fin n.succ → Type) [∀ i, measurable_space (α i)] 

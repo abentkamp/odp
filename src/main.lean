@@ -44,6 +44,29 @@ begin
   exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
 end
 
+
+lemma measurable_set_odp_composition {n : ℕ}:
+  measurable (odp_composition 𝒜 n bit ε δ) :=
+begin
+  induction n with n ih generalizing 𝒜 ε δ,
+  case zero { show measurable (λ ω, ![]), by apply measurable_const },
+  case succ { show measurable (λ ω, odp_composition 𝒜 (n + 1) bit ε δ ω),
+    suffices : measurable (λ ω, odp_composition 𝒜 (n + 1) bit ε δ (vec_cons (vec_head ω) (vec_tail ω))),
+      by simpa only [cons_head_tail] using this,
+    simp_rw [odp_composition_succ],
+    apply measurable.fin_cons,
+    { have : ∀ b, measurable ((𝒜 [] ε δ).M b), sorry,
+      measurability },
+    { sorry }, }
+end
+
+lemma measurable_algo_step {n : ℕ} : 
+  measurable (λ (oω : O × (fin n → Ω)), algo_step 𝒜 oω.1 n bit ε δ oω.2) :=
+begin
+  unfold algo_step,
+  sorry
+end
+
 include hε
 theorem main (n : ℕ) :
 diff_private_aux (P ^^ n)
@@ -93,8 +116,8 @@ begin
           (𝒜 [] ε δ).odp_partition hM
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
           (λ o ω, algo_step 𝒜 o n 1 ε δ ω),
-        sorry, -- measurablity,
-        sorry, -- measurablity,
+        exact measurable_algo_step 𝒜 0 _ _, -- measurablity,
+        exact measurable_algo_step 𝒜 1 _ _, -- measurablity,
         exact hε,
         exact (𝒜 list.nil ε δ).hδ,
         exact (λ i, εusage_for_le_ε _ _ _ _ _),
@@ -111,15 +134,15 @@ begin
     { simp only,
       rw [measure.pi_succ (λ i, Ω) (λ i, P)],
       unfold diff_private_aux,
-      intro s,
+      intros s hs,
       rw [measure.map_apply, measure.map_apply],
       rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
-      revert s,
+      revert s hs,
       exact h_diff_private_aux_PPn,
-      sorry, --measurability
-      sorry, --measurability
-      sorry, --measurability
-      sorry, --measurability
+      exact measurable.fin_cons (measurable_fst) (measurable_snd),
+      exact measurable_set_odp_composition 𝒜 1 ε δ hs, --measurability
+      exact measurable.fin_cons (measurable_fst) (measurable_snd),
+      exact measurable_set_odp_composition 𝒜 0 ε δ hs, --measurability
       apply_instance
    } }
 end
