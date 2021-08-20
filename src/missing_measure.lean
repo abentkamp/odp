@@ -47,6 +47,13 @@ begin
 end
 
 @[measurability]
+lemma measurable.vec_cons {n : ℕ} {α β : Type} [measurable_space α] [measurable_space β]
+  {f : β → α} {g : β → fin n → α}
+  (hf : measurable f) (hg : measurable g) :
+  measurable (λ x, matrix.vec_cons (f x) (g x)) :=
+measurable.fin_cons hf hg
+
+@[measurability]
 lemma measurable.vec_head {n : ℕ} {α : Type*} [measurable_space α] :
   measurable (λ (x : fin (n + 1) → α), matrix.vec_head x) :=
 begin

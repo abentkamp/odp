@@ -10,15 +10,15 @@ local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ),
 local infix ` ⊗ `:50  := measure.prod
 
 variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P] (O : Type) [measurable_space O]
-variables (X : Type) [database_type X] 
+variables (X : Type) [database_type X] [measurable_space X]
 variables {P} {O} {X} (𝒜 : adversary P O X)
 variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (hε : ε < ∞) (ω : Ω) (ωs : list Ω)
 
 noncomputable def algo_step (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=     
-  let 𝒜_choice : adversary_choice P O X ε δ := 𝒜 0 ![] ε δ in
+  let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ in
   let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o in
   let δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_partition.δ in
-  let 𝒜' := λ n os, 𝒜 (n+1) (vec_cons o os) in 
+  let 𝒜' := inform 𝒜 o in 
   odp_composition 𝒜' n bit ε' δ' ω
 
 
@@ -45,11 +45,36 @@ begin
   exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
 end
 
+lemma measurable_set_odp_composition {n : ℕ} {α : Type} [measurable_space α] 
+  (m : ℕ) (os : α → (fin m → O)) (ε δ : α → ℝ≥0∞) (ω : α → (fin n → Ω))
+  (hos : measurable os) (hε : measurable ε) (hδ : measurable δ) (hω : measurable ω) :
+  measurable (λ a : α, odp_composition (inform_vec 𝒜 m (os a)) n bit (ε a) (δ a) (ω a)) :=
+begin
+  induction n with n ih generalizing m ε δ os,
+  case zero { show measurable (λ ω, ![]), by apply measurable_const },
+  case succ { show measurable (λ a, odp_composition (inform_vec 𝒜 m (os a)) (n+1) bit (ε a) (δ a) (ω a)),
+    suffices : measurable (λ a, odp_composition (inform_vec 𝒜 m (os a)) (n+1) bit (ε a) (δ a) (vec_cons (vec_head (ω a)) (vec_tail (ω a)))),
+      by simpa only [cons_head_tail] using this,
+    unfold odp_composition,
+    apply measurable.fin_cons,
+    { simp_rw [cons_head_tail, inform_vec_choose 𝒜],
+      apply (𝒜 m).measurable _ hos hε hδ (measurable.comp measurable.vec_head hω) },
+    { simp_rw [inform_inform_vec, matrix.cons_head_tail, inform_vec_choose 𝒜],
+      apply ih (λ a, vec_tail (ω a)) _ (m+1),
+      apply measurable.vec_cons,
+      apply (𝒜 m).measurable _ hos hε hδ (measurable.comp measurable.vec_head hω),
+      exact hos,
+      -- measurability,
+      } }
+end
+
 -- I haven't been able to prove this using an adversary that gets fed a list instead of a vector
 -- because lists are currently not instantiated as a measurable space.
 lemma measurable_set_odp_composition {n : ℕ}:
   measurable (odp_composition 𝒜 n bit ε δ) :=
 begin
+  -- rw measurable_pi_iff,
+  -- intro i,
   induction n with n ih generalizing 𝒜 ε δ,
   case zero { show measurable (λ ω, ![]), by apply measurable_const },
   case succ { show measurable (λ ω, odp_composition 𝒜 (n + 1) bit ε δ ω),
@@ -57,7 +82,7 @@ begin
       by simpa only [cons_head_tail] using this,
     unfold odp_composition,
     apply measurable.fin_cons,
-    { have : ∀ b, measurable ((𝒜 0 ![] ε δ).M b), sorry,
+    { have : ∀ b, measurable (((𝒜 0).choose ![] ε δ).M b), sorry,
       sorry },
     { sorry }, }
 end
