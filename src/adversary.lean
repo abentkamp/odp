@@ -18,10 +18,18 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 
 structure adversary_n (n : ℕ) :=
 (choose : Π (outputs : fin n → O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ)
-(measurable: 
+(measurable_M : 
   ∀ (bit : fin 2) {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞} {ω : α → Ω},
   measurable os → measurable ε → measurable δ → measurable ω →
   measurable (λ (a : α), (choose (os a) (ε a) (δ a)).M ((choose (os a) (ε a) (δ a)).x bit) (ω a)))
+(measurable_ε : 
+  ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
+  measurable os → measurable o → measurable ε →  measurable δ →
+  measurable (λ (a : α), εusage (choose (os a) (ε a) (δ a)).odp_partition (o a)))
+(measurable_δ : 
+  ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
+  measurable os → measurable ε →  measurable δ →
+  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).odp_partition.δ))
 
 def adversary := Π (n : ℕ), adversary_n P O X n
 
@@ -101,10 +109,12 @@ def inform_n {n : ℕ} (𝒜 : adversary_n P O X (n+1)) (o : O) : adversary_n P 
 ⟨λ os, 𝒜.choose (vec_cons o os),
 begin 
   intros,
-  apply 𝒜.measurable,
+  apply 𝒜.measurable_M,
   apply measurable.fin_cons,
   measurability
-end⟩
+end,
+sorry,
+sorry⟩
 
 def inform (𝒜 : adversary P O X) (o : O) : adversary P O X :=
 λ n, inform_n (𝒜 (n+1)) o

@@ -45,6 +45,13 @@ begin
   exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
 end
 
+example {c : ℕ} {f : ℕ → ℕ} (hf : ∀ x, f x = c) : (λ y, f y) =  (λ y, c) :=
+begin
+  simp_rw hf,
+end
+
+-- I haven't been able to prove this using an adversary that gets fed a list instead of a vector
+-- because lists are currently not instantiated as a measurable space.
 lemma measurable_set_odp_composition {n : ℕ} {α : Type} [measurable_space α] 
   (m : ℕ) (os : α → (fin m → O)) (ε δ : α → ℝ≥0∞) (ω : α → (fin n → Ω))
   (hos : measurable os) (hε : measurable ε) (hδ : measurable δ) (hω : measurable ω) :
@@ -58,33 +65,35 @@ begin
     unfold odp_composition,
     apply measurable.fin_cons,
     { simp_rw [cons_head_tail, inform_vec_choose 𝒜],
-      apply (𝒜 m).measurable _ hos hε hδ (measurable.comp measurable.vec_head hω) },
+      apply (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω) },
     { simp_rw [inform_inform_vec, matrix.cons_head_tail, inform_vec_choose 𝒜],
       apply ih (λ a, vec_tail (ω a)) _ (m+1),
       apply measurable.vec_cons,
-      apply (𝒜 m).measurable _ hos hε hδ (measurable.comp measurable.vec_head hω),
+      apply (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω),
       exact hos,
-      -- measurability,
-      } }
+      { apply measurable.sub hε, --TODO: why can't I rewrite inform_vec_choose here?
+        suffices : measurable (λ (a : α),
+          εusage (( 𝒜 m ).choose (os a) (ε a) (δ a)).odp_partition
+            (((𝒜 m).choose (os a) (ε a) (δ a)).M (((𝒜 m).choose (os a) (ε a) (δ a)).x bit) (vec_head (ω a)))),
+        { convert this, apply funext, intro i,
+          rw inform_vec_choose 𝒜 (os i) },
+        refine (𝒜 m).measurable_ε hos _ hε hδ,
+        exact (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω) },
+      { apply measurable.sub hδ,
+        suffices : measurable (λ (a : α), 
+          ((𝒜 m).choose (os a) (ε a) (δ a)).odp_partition.δ),
+        { convert this, apply funext, intro i,
+          rw inform_vec_choose 𝒜 (os i) },
+        exact (𝒜 m).measurable_δ hos hε hδ },
+      exact measurable.comp measurable.vec_tail hω } }
 end
 
--- I haven't been able to prove this using an adversary that gets fed a list instead of a vector
--- because lists are currently not instantiated as a measurable space.
-lemma measurable_set_odp_composition {n : ℕ}:
+lemma measurable_set_odp_composition' {n : ℕ}:
   measurable (odp_composition 𝒜 n bit ε δ) :=
 begin
-  -- rw measurable_pi_iff,
-  -- intro i,
-  induction n with n ih generalizing 𝒜 ε δ,
-  case zero { show measurable (λ ω, ![]), by apply measurable_const },
-  case succ { show measurable (λ ω, odp_composition 𝒜 (n + 1) bit ε δ ω),
-    suffices : measurable (λ ω, odp_composition 𝒜 (n + 1) bit ε δ (vec_cons (vec_head ω) (vec_tail ω))),
-      by simpa only [cons_head_tail] using this,
-    unfold odp_composition,
-    apply measurable.fin_cons,
-    { have : ∀ b, measurable (((𝒜 0).choose ![] ε δ).M b), sorry,
-      sorry },
-    { sorry }, }
+  apply measurable_set_odp_composition 
+    𝒜 bit 0 (λ_, ![]) (λ_, ε) (λ_, δ) (λ ω, ω),
+  measurability,
 end
 
 lemma measurable_algo_step {n : ℕ} : 
@@ -116,38 +125,37 @@ begin
     have ih' : ∀ (o₁ : O), diff_private_aux (P ^^ n)
         (λ ω, algo_step 𝒜 o₁ n 0 ε δ ω)
         (λ ω, algo_step 𝒜 o₁ n 1 ε δ ω)
-        (ε - εusage (𝒜 0 ![] ε δ).odp_partition o₁)
-        (δ - (𝒜 0 ![] ε δ).odp_partition.δ),
+        (ε - εusage ((𝒜 0).choose ![] ε δ).odp_partition o₁)
+        (δ - ((𝒜 0).choose ![] ε δ).odp_partition.δ),
       { intro o,
-        let 𝒜_choice : adversary_choice P O X ε δ := 𝒜 0 ![] ε δ,
+        let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ,
         let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o,
         let  δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_partition.δ,
-        let  𝒜' : adversary P O X := 
-          λ n os, 𝒜 (n+1) (vec_cons o os),
+        let  𝒜' : adversary P O X := inform 𝒜 o,
         have hε' : ε' < ∞ := lt_of_le_of_lt (ennreal.sub_le_self _ _) hε,
         exact ih 𝒜' ε' δ' hε' },
     have h_diff_private_aux_PPn : diff_private_aux (P ⊗ P ^^ n)
       (λ ω, odp_composition 𝒜 (n+1) 0 ε δ (vec_cons ω.1 ω.2))
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
-    { have hM : ∀ (x : X), measurable ((𝒜 0 ![] ε δ).M x) :=
+    { have hM : ∀ (x : X), measurable (((𝒜 0).choose ![] ε δ).M x) :=
         sorry, 
       have h_ind_step : diff_private_aux (P ⊗ P ^^ n)
-        (λ ω, let o := (𝒜 0 ![] ε δ).M ((𝒜 0 ![] ε δ).x 0) ω.1 in 
+        (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 0) ω.1 in 
               (o, algo_step 𝒜 o n 0 ε δ ω.2))
-        (λ ω, let o := (𝒜 0 ![] ε δ).M ((𝒜 0 ![] ε δ).x 1) ω.1 in
+        (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 1) ω.1 in
               (o, algo_step 𝒜 o n 1 ε δ ω.2))
         ε δ,
       { apply induction_step P (P ^^ n)
-          ((𝒜 0 ![] ε δ).x 0) 
-          ((𝒜 0 ![] ε δ).x 1)
-          (𝒜 0 ![] ε δ).hx (λ x ω, (𝒜 0 ![] ε δ).M x ω)-- hM,
-          (𝒜 0 ![] ε δ).odp_partition hM
+          (((𝒜 0).choose ![] ε δ).x 0) 
+          (((𝒜 0).choose ![] ε δ).x 1)
+          ((𝒜 0).choose ![] ε δ).hx (λ x ω, ((𝒜 0).choose ![] ε δ).M x ω)-- hM,
+          ((𝒜 0).choose ![] ε δ).odp_partition hM
           (λ o ω, algo_step 𝒜 o n 0 ε δ ω) 
           (λ o ω, algo_step 𝒜 o n 1 ε δ ω),
         exact measurable_algo_step 𝒜 0 _ _, -- measurablity,
         exact measurable_algo_step 𝒜 1 _ _, -- measurablity,
         exact hε,
-        exact (𝒜 0 ![] ε δ).hδ,
+        exact ((𝒜 0).choose ![] ε δ).hδ,
         exact (λ i, εusage_for_le_ε _ _ _ _ _),
         exact ih' },
       dunfold odp_composition,
@@ -168,9 +176,9 @@ begin
       revert s hs,
       exact h_diff_private_aux_PPn,
       exact measurable.fin_cons (measurable_fst) (measurable_snd),
-      exact measurable_set_odp_composition 𝒜 1 ε δ hs, --measurability
+      exact measurable_set_odp_composition' 𝒜 1 ε δ hs, --measurability
       exact measurable.fin_cons (measurable_fst) (measurable_snd),
-      exact measurable_set_odp_composition 𝒜 0 ε δ hs, --measurability
+      exact measurable_set_odp_composition' 𝒜 0 ε δ hs, --measurability
       apply_instance
    } }
 end

@@ -32,13 +32,12 @@ structure odp_partition :=
 (ε_lt_infty : ε < ∞)
 (index : Type) 
 [finite : fintype index] -- We assume finiteness of the ODP partition for now
-(partition : index → set O)
-(measurable_partition : ∀ i, measurable_set (partition i))
-(ε_for : index → ℝ≥0∞)
+(partition : O → option index)
+(measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
+(ε_for : option index → ℝ≥0∞)
 (ε_for_lt_infty : ∀ i, ε_for i < ∞)
-(disjoint : pairwise (disjoint on partition))  
 (dp : diff_private P M ε δ)
-(odp : ∀ i, output_diff_private P M (ε_for i) (partition i))
+(odp : ∀ i, output_diff_private P M (ε_for i) {o : O | partition o = i})
 
 -- TODO: Example instance
 
@@ -47,8 +46,8 @@ noncomputable theory
 
 variables {P} {M}
 
-def odp_index (p : odp_partition P M) (o : O) : option p.index := 
-  if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
+-- def odp_index (p : odp_partition P M) (o : O) : option p.index := 
+--   if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
 
 def εusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 | none := p.ε
@@ -62,77 +61,61 @@ begin
   apply p.ε_for_lt_infty,
 end
 
-def εusage (p : odp_partition P M) (o : O) := εusage_for p (odp_index p o)
+def εusage (p : odp_partition P M) (o : O) := εusage_for p (p.partition o)
 
-def odp_set_for (p : odp_partition P M) : option p.index → set O
-| none := set.univ \ ⋃ i, p.partition i
-| (some i) :=  p.partition i
+def odp_set_for (p : odp_partition P M) : option p.index → set O :=
+λ i, {o : O | p.partition o = i}
 
-def omega_set_for (p : odp_partition P M) (g : Ω → O) (i : option p.index) : set Ω := g ⁻¹' odp_set_for p i
-
-lemma odp_index_unique {o : O} {p : odp_partition P M} {i j : p.index}
-  (hi : o ∈ p.partition i) (hj : o ∈ p.partition j) : i = j :=
-begin
-  by_contra h,
-  exact p.disjoint i j h ⟨hi, hj⟩,
-end
+lemma partition_eq_of_mem_odp_set_for {p : odp_partition P M} {i : option p.index} {o : O} (ho: o ∈ odp_set_for p i) : 
+  p.partition o = i := ho
 
 lemma pairwise_disjoint_on_odp_set_for {p : odp_partition P M} : pairwise (disjoint on odp_set_for p) :=
 begin
-  intros i j hij a ha,
-  cases i,
-  { cases j,
-    { exact hij rfl },
-    { apply ((set.mem_diff _).1 ha.1).2,
-      rw set.mem_Union,
-      exact ⟨j, ha.2⟩ } },
-  { cases j, 
-    { apply ((set.mem_diff _).1 ha.2).2,
-      rw set.mem_Union,
-      exact ⟨i, ha.1⟩ }, 
-    { apply p.disjoint i j,
-      intro h,
-      rw h at hij,
-      apply hij rfl,
-      apply ha } }
+  rintros i j hij a ⟨ha₁, ha₂⟩,
+  change p.partition a = i at ha₁,
+  change p.partition a = j at ha₂,
+  rw [←ha₁, ←ha₂] at hij,
+  contradiction,
 end
 
-lemma odp_index_of_mem_partition {o : O} {p : odp_partition P M} {i : p.index}
-  (hi : o ∈ p.partition i) : odp_index p o = some i :=
-begin
-  have hex : ∃ j, o ∈ p.partition j := ⟨i, hi⟩,
-  simp only [odp_index, hex, dif_pos],
-  exact odp_index_unique (classical.some_spec hex) hi
-end
+-- lemma odp_index_of_mem_partition {o : O} {p : odp_partition P M} {i : p.index}
+--   (hi : o ∈ p.partition i) : odp_index p o = some i :=
+-- begin
+--   have hex : ∃ j, o ∈ p.partition j := ⟨i, hi⟩,
+--   simp only [odp_index, hex, dif_pos],
+--   exact odp_index_unique (classical.some_spec hex) hi
+-- end
 
 lemma εusage_eq_εusage_for {o : O} {p : odp_partition P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
   εusage p o = εusage_for p i :=
 begin
-  cases i,
-  { simp [odp_index, εusage, λ h, set.not_mem_of_mem_diff ho (set.mem_Union.2 h)] },
-  { unfold odp_set_for at ho, 
-    rw [εusage, odp_index_of_mem_partition ho] }
+  rw ← partition_eq_of_mem_odp_set_for ho,
+  refl,
 end
 
-lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) : o ∈ odp_set_for p (odp_index p o) :=
-begin
-  by_cases h : ∃ (i : p.index), o ∈ p.partition i,
-  { simp only [odp_set_for, odp_index, h, dif_pos],
-    exact classical.some_spec2 (λ i, o ∈ p.partition i) (λ a h, h) },
-  { simp [odp_set_for, odp_index, h, dif_neg] }
-end
+lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) : o ∈ odp_set_for p (p.partition o) :=
+by simp [odp_set_for]
 
 @[measurability]
 lemma measurable_set_odp_set_for (p : odp_partition P M) (i : option p.index) : 
   measurable_set (odp_set_for p i) :=
+p.measurable_partition i
+
+instance (p : odp_partition P M) : measurable_space p.index := ⊤
+instance (p : odp_partition P M) : measurable_space (option p.index) := ⊤
+
+@[measurability]
+lemma measurable_partition (p : odp_partition P M) : 
+  measurable (p.partition) :=
 begin
-  haveI := p.finite,
-  cases i,
-  { apply measurable_set.diff (measurable_set.univ)
-      (measurable_set.Union _),
-    apply encodable.fintype.encodable,
-    apply p.measurable_partition },
-  { apply p.measurable_partition }
+  haveI : fintype p.index := p.finite,
+  intros s hs,
+  rw ←set.bUnion_preimage_singleton,
+  change measurable_set (⋃ i ∈ s, odp_set_for p i),
+  apply set.finite.measurable_set_bUnion,
+  apply set.finite.of_fintype,
+  intros,
+  apply measurable_set_odp_set_for,
 end
 
 lemma union_odp_set_for_eq_univ (p : odp_partition P M) : (⋃ i, odp_set_for p i) = set.univ :=
@@ -140,7 +123,7 @@ begin
   apply set.eq_univ_of_forall,
   intros o,
   apply set.mem_Union.2,
-  use odp_index p o,
+  use p.partition o,
   apply mem_odp_set_for_odp_index
 end
 
