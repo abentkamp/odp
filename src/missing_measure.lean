@@ -35,6 +35,36 @@ begin
   exact hf₂ ⟨k, nat.lt_of_succ_lt_succ hk⟩
 end 
 
+-- TODO: move
+def fin.cases_last {n : ℕ}
+  {C : fin (n.succ) → Sort*} 
+  (Hi : Π i : fin n, C ⟨i.1, nat.lt_succ_of_lt i.2⟩) 
+  (Hn : C ⟨n, n.lt_succ_self⟩) :
+  Π (i : fin (n.succ)), C i :=
+begin
+  intro i,
+  by_cases hin : i < ⟨n, n.lt_succ_self⟩,
+  { convert Hi ⟨i.1, hin⟩,
+    ext, refl },
+  { have : i = ⟨n, n.lt_succ_self⟩,
+    { ext,
+      apply nat.eq_of_lt_succ_of_not_lt i.2 hin },
+    rw this,
+    apply Hn }
+end
+
+@[measurability] lemma measurable.pi_fin' {n : ℕ}
+  {α : fin n.succ → Type} [∀ i, measurable_space (α i)] {β : Type} [measurable_space β] {f : β → Πi, α i}
+  (hf₁ : measurable (λ a, fin.init (f a)))
+  (hf₂ : measurable (λ a : β, (f a) ⟨n, n.lt_succ_self⟩)) :
+  measurable f :=
+begin
+  rw measurable_pi_iff,
+  refine fin.cases_last _ _,
+  { rwa measurable_pi_iff at hf₁ },
+  { apply hf₂ },
+end 
+
 @[measurability]
 lemma measurable.fin_cons {n : ℕ} {α : fin n.succ → Type} {β : Type} [∀ i, measurable_space (α i)] [measurable_space β]
   {f : β → α 0} {g : β → Π (i : fin n), α i.succ}
@@ -44,6 +74,21 @@ begin
   apply measurable.pi_fin,
   apply hf,
   simp_rw fin.tail_cons,
+  apply hg,
+end
+
+@[measurability]
+lemma measurable.fin_snoc {n : ℕ} {α : fin n.succ → Type} {β : Type} 
+  [∀ i, measurable_space (α i)] [measurable_space β]
+  {f : β → Π (i : fin n), α i.cast_succ} {g : β → α (fin.last n)}
+  (hf : measurable f) (hg : measurable g) :
+  measurable (λ (x : β), fin.snoc (f x) (g x)) :=
+begin
+  apply measurable.pi_fin',
+  simp_rw fin.init_snoc,
+  apply hf,
+  change measurable (λ (a : β), fin.snoc (f a) (g a) (fin.last _)),
+  simp_rw fin.snoc_last,
   apply hg,
 end
 
