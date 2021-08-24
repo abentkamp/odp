@@ -1,17 +1,16 @@
 import measure_theory.decomposition.unsigned_hahn
 
-
-open measure_theory
-
+namespace measure_theory
 
 variables {α : Type*} [measurable_space α] {μ ν : measure α} [finite_measure μ] [finite_measure ν]
 
-
+/-- This instance of `finite_measure (μ.restrict s)` assumes `finite_measure μ`
+instead of `fact (μ s < ∞)`. This is less general, but better for automation. -/
 instance restrict.finite_measure' (s : set α) (μ : measure α) [finite_measure μ] :
   finite_measure (μ.restrict s) :=
 @restrict.finite_measure α _ s μ (fact.mk (measure_lt_top μ s))
 
-lemma measure_theory.measure.le_sub_add : μ ≤ μ - ν + ν :=
+lemma measure.le_sub_add : μ ≤ μ - ν + ν :=
 begin
   obtain ⟨s, hsm, hs, hsc⟩ : ∃ (s : set α),
     measurable_set s ∧
@@ -85,3 +84,5 @@ begin
   simp [ht],
   apply ht,
 end
+
+end measure_theory
