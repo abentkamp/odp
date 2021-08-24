@@ -1,4 +1,4 @@
-import .dp .missing .missing_measure
+import .dp .missing .missing_measure .missing_matrix
 
 open measure_theory ennreal database_type
 open_locale ennreal
@@ -117,45 +117,85 @@ begin
   apply measurable.fin_cons,
   measurability
 end,
-sorry,
-sorry,
-sorry⟩
+begin 
+  intros,
+  apply 𝒜.measurable_x,
+  apply measurable.fin_cons,
+  measurability
+end,
+begin 
+  intros,
+  apply 𝒜.measurable_ε,
+  apply measurable.fin_cons,
+  measurability
+end,
+begin 
+  intros,
+  apply 𝒜.measurable_δ,
+  apply measurable.fin_cons,
+  measurability
+end⟩
 
 def inform (𝒜 : adversary P O X) (o : O) : adversary P O X :=
 λ n, inform_n (𝒜 (n+1)) o
 
---TODO: delete?
-def inform_list (𝒜 : adversary P O X) : list O → adversary P O X
-| [] := 𝒜
-| (o :: os) := inform (inform_list os) o
+def inform_vec : adversary P O X → Π (m : ℕ), (fin m → O) → adversary P O X
+| 𝒜 0 os := 𝒜
+| 𝒜 (m+1) os := inform (inform_vec 𝒜 m (vec_butlast os)) (vec_last os)
 
-def inform_vec (𝒜 : adversary P O X) : Π (m : ℕ), (fin m → O) → adversary P O X
-| 0 os := 𝒜
-| (m+1) os := inform (inform_vec m (vec_tail os)) (vec_head os)
 
-lemma inform_inform_vec (𝒜 : adversary P O X) (m : ℕ) (o : O) (os : fin m → O) : 
-  inform (inform_vec 𝒜 m os) o = inform_vec 𝒜 (m+1) (vec_cons o os) := sorry
-
-lemma inform_vec_1 (𝒜 : adversary P O X) (o : O) (os : fin 1 → O) : 
-  inform_vec 𝒜 1 ![o] = inform 𝒜 o := rfl
-
-lemma inform_inform_list (𝒜 : adversary P O X) (o : O) (os : list O) : 
-  inform (inform_list 𝒜 os) o = inform_list 𝒜 (o :: os) := rfl
-
-lemma inform_list_choose₀ (𝒜 : adversary P O X) (o : O) (os : list O) : 
-  (inform 𝒜 o os.length).choose (list.to_fin os) 
-  = (𝒜 (os.length+1)).choose (list.to_fin (o :: os)) :=
-sorry
-
-lemma inform_list_choose (𝒜 : adversary P O X) (os : list O) : 
-  (inform_list 𝒜 os 0).choose ![]
-  = (𝒜 os.length).choose (list.to_fin os) :=
-sorry
+lemma inform_inform_vec_comm (𝒜 : adversary P O X) {m : ℕ} (os : fin m.succ → O) : 
+inform (inform_vec 𝒜 m (vec_butlast os)) (vec_last os) 
+= inform_vec (inform 𝒜 (vec_head os)) m (vec_tail os)
+:= begin
+  induction m with m ih,
+  { refl },
+  { unfold inform_vec, 
+  rw ih,
+  rw [head_butlast, last_tail, butlast_tail], }
+end
 
 lemma inform_vec_choose (𝒜 : adversary P O X) {m : ℕ} (os : fin m → O) : 
-  (inform_vec 𝒜 m os 0).choose ![]
-  = (𝒜 m).choose os :=
-sorry
+(inform_vec 𝒜 m os 0).choose ![] = (𝒜 m).choose os :=
+begin
+  induction m with m ih generalizing os 𝒜,
+  { unfold inform_vec, congr' },
+  { unfold inform_vec,
+    rw inform_inform_vec_comm,
+    rw ih,
+    unfold inform,
+    unfold inform_n,
+    unfold adversary_n.choose,
+    simp, }
+end
+
+lemma inform_inform_vec (𝒜 : adversary P O X) (m : ℕ) (o : O) (os : fin m → O) : 
+  inform (inform_vec 𝒜 m os) o = inform_vec 𝒜 (m+1) (vec_snoc os o) :=
+by rw [inform_vec, butlast_snoc, last_snoc]
+
+-- set_option pp.beta true
+-- lemma inform_vec_choose₀ (𝒜 : adversary P O X) {m n : ℕ} (os : fin m → O) (os' : fin n → O) : 
+--   (inform_vec 𝒜 m os n).choose os' = (𝒜 (n + m)).choose (fin.append (add_comm _ _) os os') :=
+-- begin
+--   induction m with m ih generalizing n,
+--   { congr', simp [fin.append], },
+--   {unfold inform_vec, unfold inform, unfold inform_n,
+-- change (inform_vec
+--      (λ (n : ℕ),
+--         {choose := λ (os_1 : fin n → O), (𝒜 (n + 1)).choose (vec_cons (vec_head os) os_1),
+--          measurable_M := _,
+--          measurable_x := _,
+--          measurable_ε := _,
+--          measurable_δ := _})
+--      m
+--      (vec_tail os)
+--      n).choose
+--     os' =
+--   (𝒜 (n + m.succ)).choose (fin.append _ os os'),
+
+--   simp_rw [cons_head_tail],}
+-- end
+
 
 noncomputable def odp_composition : Π (𝒜 : adversary P O X) (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ωs : fin n → Ω), fin n → O
 | 𝒜 0 bit ε δ ωs := ![]
