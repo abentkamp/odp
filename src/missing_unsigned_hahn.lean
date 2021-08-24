@@ -4,8 +4,6 @@ import measure_theory.decomposition.unsigned_hahn
 open measure_theory
 
 
-#check classical.some hahn_decomposition
-
 variables {α : Type*} [measurable_space α] {μ ν : measure α} [finite_measure μ] [finite_measure ν]
 
 

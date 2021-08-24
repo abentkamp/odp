@@ -17,15 +17,20 @@ fin.init v
 
 @[simp]
 lemma head_butlast {n : ℕ} (v : fin n.succ.succ → α) : 
-  vec_head (vec_butlast v) = vec_head v := sorry
+  vec_head (vec_butlast v) = vec_head v := rfl
 
 @[simp]
 lemma last_tail {n : ℕ} (v : fin n.succ.succ → α) : 
-  vec_last (vec_tail v) = vec_last v := sorry
+  vec_last (vec_tail v) = vec_last v := rfl
 
 @[simp]
 lemma butlast_tail {n : ℕ} (v : fin n.succ.succ → α) : 
-  vec_butlast (vec_tail v) = vec_tail (vec_butlast v) := sorry
+  vec_butlast (vec_tail v) = vec_tail (vec_butlast v) :=
+begin
+  ext i,
+  simp [vec_butlast, vec_tail, fin.init, fin.cast_succ, 
+    fin.cast_add, fin.cast_le, fin.cast_lt]
+end
 
 
 /-- `vec_snoc t h` appends an entry `h` to a vector `t`.
