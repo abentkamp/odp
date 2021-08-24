@@ -19,9 +19,13 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 structure adversary_n (n : ℕ) :=
 (choose : Π (outputs : fin n → O) (ε δ : ℝ≥0∞), adversary_choice P O X ε δ)
 (measurable_M : 
-  ∀ (bit : fin 2) {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞} {ω : α → Ω},
-  measurable os → measurable ε → measurable δ → measurable ω →
-  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).M ((choose (os a) (ε a) (δ a)).x bit) (ω a)))
+  ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞} {x : α → X} {ω : α → Ω},
+  measurable os → measurable ε → measurable δ → measurable x → measurable ω →
+  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).M (x a) (ω a)))
+(measurable_x : 
+  ∀ (bit : fin 2) {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
+  measurable os → measurable ε → measurable δ →
+  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).x bit))
 (measurable_ε : 
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
   measurable os → measurable o → measurable ε →  measurable δ →
@@ -114,6 +118,7 @@ begin
   measurability
 end,
 sorry,
+sorry,
 sorry⟩
 
 def inform (𝒜 : adversary P O X) (o : O) : adversary P O X :=
@@ -131,6 +136,8 @@ def inform_vec (𝒜 : adversary P O X) : Π (m : ℕ), (fin m → O) → advers
 lemma inform_inform_vec (𝒜 : adversary P O X) (m : ℕ) (o : O) (os : fin m → O) : 
   inform (inform_vec 𝒜 m os) o = inform_vec 𝒜 (m+1) (vec_cons o os) := sorry
 
+lemma inform_vec_1 (𝒜 : adversary P O X) (o : O) (os : fin 1 → O) : 
+  inform_vec 𝒜 1 ![o] = inform 𝒜 o := rfl
 
 lemma inform_inform_list (𝒜 : adversary P O X) (o : O) (os : list O) : 
   inform (inform_list 𝒜 os) o = inform_list 𝒜 (o :: os) := rfl

@@ -65,11 +65,13 @@ begin
     unfold odp_composition,
     apply measurable.fin_cons,
     { simp_rw [cons_head_tail, inform_vec_choose 𝒜],
-      apply (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω) },
+      apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
+      apply (𝒜 m).measurable_x bit hos hε hδ, },
     { simp_rw [inform_inform_vec, matrix.cons_head_tail, inform_vec_choose 𝒜],
       apply ih (λ a, vec_tail (ω a)) _ (m+1),
       apply measurable.vec_cons,
-      apply (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω),
+      apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
+      apply (𝒜 m).measurable_x bit hos hε hδ,
       exact hos,
       { apply measurable.sub hε, --TODO: why can't I rewrite inform_vec_choose here?
         suffices : measurable (λ (a : α),
@@ -78,7 +80,8 @@ begin
         { convert this, apply funext, intro i,
           rw inform_vec_choose 𝒜 (os i) },
         refine (𝒜 m).measurable_ε hos _ hε hδ,
-        exact (𝒜 m).measurable_M _ hos hε hδ (measurable.comp measurable.vec_head hω) },
+        apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
+        apply (𝒜 m).measurable_x bit hos hε hδ, },
       { apply measurable.sub hδ,
         suffices : measurable (λ (a : α), 
           ((𝒜 m).choose (os a) (ε a) (δ a)).odp_partition.δ),
@@ -99,8 +102,13 @@ end
 lemma measurable_algo_step {n : ℕ} : 
   measurable (λ (oω : O × (fin n → Ω)), algo_step 𝒜 oω.1 n bit ε δ oω.2) :=
 begin
-  unfold algo_step,
-  sorry
+  apply measurable_set_odp_composition 𝒜 bit 1
+    (λ oω : O × (fin n → Ω), ![oω.1])
+    (λ oω : O × (fin n → Ω), ε - εusage ((𝒜 0).choose vec_empty ε δ).odp_partition oω.fst)
+    (λ oω : O × (fin n → Ω), δ - ((𝒜 0).choose vec_empty ε δ).odp_partition.δ)
+    (λ oω : O × (fin n → Ω), oω.2),
+  apply measurable.vec_cons,
+  measurability
 end
 
 include hε
@@ -137,8 +145,9 @@ begin
     have h_diff_private_aux_PPn : diff_private_aux (P ⊗ P ^^ n)
       (λ ω, odp_composition 𝒜 (n+1) 0 ε δ (vec_cons ω.1 ω.2))
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
-    { have hM : ∀ (x : X), measurable (((𝒜 0).choose ![] ε δ).M x) :=
-        sorry, 
+    { have hM : ∀ (x : X), measurable (((𝒜 0).choose ![] ε δ).M x),
+      { intro x,
+        apply (𝒜 0).measurable_M measurable_const measurable_const measurable_const measurable_const measurable_id }, 
       have h_ind_step : diff_private_aux (P ⊗ P ^^ n)
         (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 0) ω.1 in 
               (o, algo_step 𝒜 o n 0 ε δ ω.2))
