@@ -38,9 +38,9 @@ def vec_cons.equiv (n : ℕ) : O × (fin n → O) ≃ (fin n.succ → O) :=
  begin intro x, simp end, 
  begin intro x, simp end⟩
 
-lemma diff_private_aux_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
+lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
   let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
-  diff_private_aux P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_aux P M₀ M₁ ε δ :=
+  diff_private_composition P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_composition P M₀ M₁ ε δ :=
 begin
   intros f h s hs,
   rw [←set.preimage_image_eq s (injective_head_tail n)],
@@ -122,7 +122,7 @@ end
 
 include hε
 theorem main (n : ℕ) :
-diff_private_aux (P ^^ n)
+diff_private_composition (P ^^ n)
   (odp_composition 𝒜 n 0 ε δ)
   (odp_composition 𝒜 n 1 ε δ) ε δ :=
 begin
@@ -139,7 +139,7 @@ begin
     },
     { simp [set.eq_empty_of_subsingleton_of_not_univ s h] }},
   case succ : n ih {
-    have ih' : ∀ (o₁ : O), diff_private_aux (P ^^ n)
+    have ih' : ∀ (o₁ : O), diff_private_composition (P ^^ n)
         (λ ω, algo_step 𝒜 o₁ n 0 ε δ ω)
         (λ ω, algo_step 𝒜 o₁ n 1 ε δ ω)
         (ε - εusage ((𝒜 0).choose ![] ε δ).odp_partition o₁)
@@ -151,13 +151,13 @@ begin
         let  𝒜' : adversary P O X := inform 𝒜 o,
         have hε' : ε' < ∞ := lt_of_le_of_lt (ennreal.sub_le_self _ _) hε,
         exact ih 𝒜' ε' δ' hε' },
-    have h_diff_private_aux_PPn : diff_private_aux (P ⊗ P ^^ n)
+    have h_diff_private_composition_PPn : diff_private_composition (P ⊗ P ^^ n)
       (λ ω, odp_composition 𝒜 (n+1) 0 ε δ (vec_cons ω.1 ω.2))
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
     { have hM : ∀ (x : X), measurable (((𝒜 0).choose ![] ε δ).M x),
       { intro x,
         apply (𝒜 0).measurable_M measurable_const measurable_const measurable_const measurable_const measurable_id }, 
-      have h_ind_step : diff_private_aux (P ⊗ P ^^ n)
+      have h_ind_step : diff_private_composition (P ⊗ P ^^ n)
         (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 0) ω.1 in 
               (o, algo_step 𝒜 o n 0 ε δ ω.2))
         (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 1) ω.1 in
@@ -177,22 +177,22 @@ begin
         exact (λ i, εusage_for_le_ε _ _ _ _ _),
         exact ih' },
       dunfold odp_composition,
-      apply diff_private_aux_map_vec_head_vec_tail,
+      apply diff_private_composition_map_vec_head_vec_tail,
       convert h_ind_step,
       simp only [tail_cons, head_cons, algo_step],
       simp [algo_step],
     },
-    show diff_private_aux (P ^^ (n+1))
+    show diff_private_composition (P ^^ (n+1))
       (odp_composition 𝒜 (n+1) 0 ε δ)
       (odp_composition 𝒜 (n+1) 1 ε δ) ε δ,
     { simp only,
       rw [measure.pi_succ (λ i, Ω) (λ i, P)],
-      unfold diff_private_aux,
+      unfold diff_private_composition,
       intros s hs,
       rw [measure.map_apply, measure.map_apply],
       rw [set.preimage_set_of_eq, set.preimage_set_of_eq],
       revert s hs,
-      exact h_diff_private_aux_PPn,
+      exact h_diff_private_composition_PPn,
       exact measurable.fin_cons (measurable_fst) (measurable_snd),
       exact measurable_set_odp_composition' 𝒜 1 ε δ hs, --measurability
       exact measurable.fin_cons (measurable_fst) (measurable_snd),
