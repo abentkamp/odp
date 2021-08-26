@@ -48,20 +48,26 @@ def output_diff_private (s : set O) :=
   ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y → 
   P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t}
 
-/-- Given an (ε, δ)-differentially private mechanism M (where δ may be zero),
-an ODP parti- tion P = {Pδ } ∪ {Pε }k for M is a partition of Range(M) into k
-setsPδ,Pε,Pε,...,andassociatedvaluesε(Pε),ε(Pε),···≥0 1212 (Pδ has no associated
-ε-value) such that for each k, (M,Pε) k fulfills ε (Pε )-ODP. -/
+/-- An ODP mechanism is an `ε`-`δ`-differentially private mechanism such that
+there is a partition of the set of outputs `O` into measurable subsets indexed
+by `i` where `M` is `ε_for i`-output differentially private for each `i`. 
+
+TODO: For now, we assume that the partition is finite. We need to generalize it
+to countable partitions.
+
+The partition is realized by a function `partition` that assigns to every
+possible output an index `some i` or `none` if there is no associated 
+`ε_for i`-value for that output. -/
 structure odp_mechanism :=
 (ε δ : ℝ≥0∞)
 (ε_lt_infty : ε < ∞)
+(dp : diff_private P M ε δ)
 (index : Type) 
-[finite : fintype index] -- We assume finiteness of the ODP partition for now
+[finite : fintype index]
 (partition : O → option index)
 (measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
 (ε_for : option index → ℝ≥0∞)
 (ε_for_lt_infty : ∀ i, ε_for i < ∞)
-(dp : diff_private P M ε δ)
 (odp : ∀ i, output_diff_private P M (ε_for i) {o : O | partition o = i})
 
 -- TODO: Example instance
@@ -96,14 +102,6 @@ begin
   rw [←ha₁, ←ha₂] at hij,
   contradiction,
 end
-
--- lemma odp_index_of_mem_partition {o : O} {p : odp_mechanism P M} {i : p.index}
---   (hi : o ∈ p.partition i) : odp_index p o = some i :=
--- begin
---   have hex : ∃ j, o ∈ p.partition j := ⟨i, hi⟩,
---   simp only [odp_index, hex, dif_pos],
---   exact odp_index_unique (classical.some_spec hex) hi
--- end
 
 lemma εusage_eq_εusage_for {o : O} {p : odp_mechanism P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
   εusage p o = εusage_for p i :=
