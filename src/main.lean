@@ -38,7 +38,8 @@ def vec_cons.equiv (n : ℕ) : O × (fin n → O) ≃ (fin n.succ → O) :=
  begin intro x, simp end, 
  begin intro x, simp end⟩
 
-lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
+lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] 
+  (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
   let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
   diff_private_composition P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_composition P M₀ M₁ ε δ :=
 begin

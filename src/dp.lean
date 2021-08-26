@@ -1,16 +1,19 @@
 import measure_theory.constructions.prod
 import .missing_ennreal
 
+noncomputable theory
+open measure_theory ennreal 
+open_locale ennreal
+open_locale classical
+
 /-- For our purposes, the type of databases is arbitrary, but it must have some
 notion of neighboring databases. -/
 class database_type (X : Type*) :=
 (neighboring : X → X → Prop)
-
-open measure_theory ennreal database_type
-open_locale ennreal
+open database_type
 
 /- `Ω` is a sample space with a probability measure `P` on it. -/
-variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P]
+variables {Ω : Type} [measurable_space Ω] (P : measure Ω)
 
 /- `O` is the type of outputs of mechanisms. -/
 variables {O : Type} {O' : Type} [measurable_space O] [measurable_space O']
@@ -61,11 +64,7 @@ structure odp_mechanism :=
 (dp : diff_private P M ε δ)
 (odp : ∀ i, output_diff_private P M (ε_for i) {o : O | partition o = i})
 
-#check odp_mechanism
 -- TODO: Example instance
-
-open_locale classical
-noncomputable theory
 
 variables {P} {M}
 
