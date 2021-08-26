@@ -3,16 +3,16 @@ import .dp .missing_measure .missing_matrix
 open measure_theory ennreal database_type
 open_locale ennreal
 
-variables {Ω : Type} [measurable_space Ω] (P : measure Ω) (O : Type) [measurable_space O]
+variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P] (O : Type) [measurable_space O]
 
 variables (X : Type) [database_type X] [measurable_space X] -- TODO: What does it mean for X to be measurable?
 
 structure adversary_choice (ε δ : ℝ≥0∞) :=
 (M : X → Ω → O)
-(odp_partition : odp_partition P M)
-(hε : odp_partition.ε ≤ ε)
-(hδ : odp_partition.δ ≤ δ)
-(hε_for : ∀ i, odp_partition.ε_for i ≤ ε)
+(odp_mechanism : odp_mechanism P M)
+(hε : odp_mechanism.ε ≤ ε)
+(hδ : odp_mechanism.δ ≤ δ)
+(hε_for : ∀ i, odp_mechanism.ε_for i ≤ ε)
 (x : fin 2 → X)
 (hx : neighboring (x 0) (x 1))
 
@@ -29,16 +29,16 @@ structure adversary_n (n : ℕ) :=
 (measurable_ε : 
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
   measurable os → measurable o → measurable ε →  measurable δ →
-  measurable (λ (a : α), εusage (choose (os a) (ε a) (δ a)).odp_partition (o a)))
+  measurable (λ (a : α), εusage (choose (os a) (ε a) (δ a)).odp_mechanism (o a)))
 (measurable_δ : 
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
   measurable os → measurable ε →  measurable δ →
-  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).odp_partition.δ))
+  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).odp_mechanism.δ))
 
 def adversary := Π (n : ℕ), adversary_n P O X n
 
-lemma εusage_for_le_ε {ε δ : ℝ≥0∞} (𝒜_choice : adversary_choice P O X ε δ) (i : option 𝒜_choice.odp_partition.index) : 
-  εusage_for 𝒜_choice.odp_partition i ≤ ε := 
+lemma εusage_for_le_ε {ε δ : ℝ≥0∞} (𝒜_choice : adversary_choice P O X ε δ) (i : option 𝒜_choice.odp_mechanism.index) : 
+  εusage_for 𝒜_choice.odp_mechanism i ≤ ε := 
 begin 
   cases i,
   apply 𝒜_choice.hε,
@@ -119,7 +119,7 @@ noncomputable def odp_composition : Π (𝒜 : adversary P O X) (n : ℕ) (bit :
 | 𝒜 (n+1) bit ε δ ωs :=
   let 𝒜_choice := (𝒜 0).choose ![] ε δ in 
   let o := 𝒜_choice.M (𝒜_choice.x bit) (vec_head ωs) in
-  let ε' := ε - εusage 𝒜_choice.odp_partition o in
-  let δ' := δ - 𝒜_choice.odp_partition.δ in
+  let ε' := ε - εusage 𝒜_choice.odp_mechanism o in
+  let δ' := δ - 𝒜_choice.odp_mechanism.δ in
   let 𝒜' := inform 𝒜 o in
   vec_cons o (odp_composition 𝒜' n bit ε' δ' (vec_tail ωs))

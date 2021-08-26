@@ -15,7 +15,7 @@ variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂]
 variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P₁] [probability_measure P₂]
 variables {O₁ O₂ : Type} [measurable_space O₁] [measurable_space O₂]
 variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
-variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
+variables (M₁ : X → Ω₁ → O₁) (p : odp_mechanism P₁ M₁)
 variables (hM₁ : ∀ x, measurable (M₁ x))
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
 variables (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
