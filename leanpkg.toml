@@ -1,8 +1,8 @@
 [package]
 name = "odp"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.31.0"
+lean_version = "leanprover-community/lean:3.32.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "6f88eecaf787d46fa4c37dc660d32b1b2c87414c"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "2e1e98fac6fa181ce57f9ce04914bf4cbe3120bd"}

@@ -1,4 +1,4 @@
-import measure_theory.prod
+import measure_theory.constructions.prod
 import .missing_ennreal
 
 class database_type (X : Type*) :=

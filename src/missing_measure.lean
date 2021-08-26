@@ -1,6 +1,5 @@
 
-import measure_theory.pi
-import measure_theory.giry_monad
+import measure_theory.constructions.pi
 import data.matrix.notation
 import .missing_matrix
 

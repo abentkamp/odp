@@ -1,6 +1,5 @@
 import .dp .missing_measure
 import missing_integration
-import measure_theory.measure_space
 import missing_unsigned_hahn
 import missing_finset
 import missing_measure
@@ -218,7 +217,7 @@ end
      + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
 begin
   rw [lintegral_const_mul, measure.restrict_smul, lintegral_smul_measure],
-  rw [←mul_assoc, ←exp_add, sub_add_cancel_of_le],
+  rw [←mul_assoc, ←exp_add, ennreal.sub_add_cancel_of_le],
   rw [lintegral_one, measure.restrict_apply_univ],
   apply h_εusage_for,
   exact h_measurable_M₂₁',
@@ -387,7 +386,7 @@ calc
     convert ←preimage_Union,
     rw ←split_set p s,
     exact measurable_set_preimage_s_inter₀,
-    apply encodable.fintype.encodable,
+    apply fintype.encodable,
     { apply pairwise_disjoint_on_preimage,
       apply pairwise_disjoint_on_inter,
       apply pairwise_disjoint_on_prod (odp_set_for p) univ,
@@ -443,7 +442,7 @@ begin
     congr,
     exact this, 
     apply measurable_set_preimage_s_inter₁,
-    apply encodable.fintype.encodable,
+    apply fintype.encodable,
     { apply pairwise_disjoint_on_preimage, -- TODO: Deduplicate
       apply pairwise_disjoint_on_inter,
       apply pairwise_disjoint_on_prod (odp_set_for p) univ,
@@ -454,7 +453,7 @@ begin
   { rw ←tsum_fintype,
     rw ←measure_Union _, 
     { measurability },
-    apply encodable.fintype.encodable,
+    apply fintype.encodable,
     { apply pairwise_disjoint_on_preimage,
       apply pairwise_disjoint_on_odp_set_for, } }
 end

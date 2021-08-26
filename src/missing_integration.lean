@@ -1,4 +1,4 @@
-import measure_theory.integration
+import measure_theory.integral.lebesgue
 
 variables {α β γ δ : Type*}
 namespace measure_theory
@@ -22,7 +22,7 @@ begin
   rw [← @lintegral_zero _ _ (μ.restrict sᶜ)],
   apply measure_theory.lintegral_congr_ae,
   rw measure_theory.ae_restrict_eq,
-  apply filter.mem_inf_sets_of_right,
+  apply filter.mem_inf_of_right,
   apply h,
   measurability
 end
@@ -33,7 +33,7 @@ lemma set_lintegral_fun_congr {s : set α} (hs : measurable_set s) (f g : α →
 begin
   apply measure_theory.lintegral_congr_ae,
   rw measure_theory.ae_restrict_eq,
-  apply filter.mem_inf_sets_of_right,
+  apply filter.mem_inf_of_right,
   apply h,
   apply hs
 end
