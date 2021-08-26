@@ -74,6 +74,8 @@ structure odp_mechanism :=
 
 variables {P} {M}
 
+/-- The ε usage for a partition `i` of an ODP mechanism `M` is normally given by
+`p.ε_for i`, but for `none` the mechanism uses `p.ε`. -/
 def εusage_for (p : odp_mechanism P M) : option p.index → ℝ≥0∞
 | none := p.ε
 | (some i) :=  p.ε_for i
@@ -86,15 +88,20 @@ begin
   apply p.ε_for_lt_infty,
 end
 
+/-- To determine the ε-usage for a certain output, we look up its partition and
+refer to `εusage_for`. -/
 def εusage (p : odp_mechanism P M) (o : O) := εusage_for p (p.partition o)
 
+/-- The set of outputs associated with an index `i` -/
 def odp_set_for (p : odp_mechanism P M) : option p.index → set O :=
 λ i, {o : O | p.partition o = i}
 
-lemma partition_eq_of_mem_odp_set_for {p : odp_mechanism P M} {i : option p.index} {o : O} (ho: o ∈ odp_set_for p i) : 
+lemma partition_eq_of_mem_odp_set_for {p : odp_mechanism P M} {i : option p.index} 
+  {o : O} (ho: o ∈ odp_set_for p i) : 
   p.partition o = i := ho
 
-lemma pairwise_disjoint_on_odp_set_for {p : odp_mechanism P M} : pairwise (disjoint on odp_set_for p) :=
+lemma pairwise_disjoint_on_odp_set_for {p : odp_mechanism P M} : 
+  pairwise (disjoint on odp_set_for p) :=
 begin
   rintros i j hij a ⟨ha₁, ha₂⟩,
   change p.partition a = i at ha₁,
@@ -103,14 +110,16 @@ begin
   contradiction,
 end
 
-lemma εusage_eq_εusage_for {o : O} {p : odp_mechanism P M} {i : option p.index} (ho : o ∈ odp_set_for p i) :
+lemma εusage_eq_εusage_for {p : odp_mechanism P M} {i : option p.index} 
+  {o : O} (ho : o ∈ odp_set_for p i) :
   εusage p o = εusage_for p i :=
 begin
   rw ← partition_eq_of_mem_odp_set_for ho,
   refl,
 end
 
-lemma mem_odp_set_for_odp_index (p : odp_mechanism P M) (o : O) : o ∈ odp_set_for p (p.partition o) :=
+lemma mem_odp_set_for_odp_index (p : odp_mechanism P M) (o : O) :
+  o ∈ odp_set_for p (p.partition o) :=
 by simp [odp_set_for]
 
 @[measurability]
@@ -118,6 +127,8 @@ lemma measurable_set_odp_set_for (p : odp_mechanism P M) (i : option p.index) :
   measurable_set (odp_set_for p i) :=
 p.measurable_partition i
 
+/-- Since the type of indices is finite, we can assume that all its subsets are
+measurable. -/
 instance (p : odp_mechanism P M) : measurable_space p.index := ⊤
 instance (p : odp_mechanism P M) : measurable_space (option p.index) := ⊤
 
@@ -144,7 +155,8 @@ begin
   apply mem_odp_set_for_odp_index
 end
 
-lemma split_set (p : odp_mechanism P M) (s : set (O × O')) : s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
+lemma split_set (p : odp_mechanism P M) (s : set (O × O')) : 
+  s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
 calc s = s ∩ (set.prod set.univ set.univ) : by simp
 ... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) : by rw ←union_odp_set_for_eq_univ _
 ... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod set.univ) : by rw set.Union_prod_const
