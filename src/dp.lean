@@ -18,7 +18,6 @@ def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
--- TODO: need to add measurability assumption on s?
 def diff_private :=
   ∀ (x y : X) (s : set O), measurable_set s → neighboring x y → 
   P {ω : Ω | M x ω ∈ s} ≤ exp ε * P {ω : Ω | M y ω ∈ s} + δ
@@ -45,9 +44,6 @@ open_locale classical
 noncomputable theory
 
 variables {P} {M}
-
--- def odp_index (p : odp_partition P M) (o : O) : option p.index := 
---   if h : ∃ i : p.index, o ∈ p.partition i then some (classical.some h) else none
 
 def εusage_for (p : odp_partition P M) : option p.index → ℝ≥0∞
 | none := p.ε
