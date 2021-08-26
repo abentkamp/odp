@@ -14,17 +14,17 @@ variables {X : Type} [database_type X] (M : X → Ω → O) (M₀ : Ω → O) (M
 variables (ε δ : ℝ≥0∞)
 
 /- Differential provacy for compositions M₀, M₁ of mechanisms -/
-def diff_private_composition := -- TODO Rename: diff_private_composition
+def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
 -- TODO: need to add measurability assumption on s?
 def diff_private :=
-  ∀ (x y : X) (s : set O), neighboring x y → 
+  ∀ (x y : X) (s : set O), measurable_set s → neighboring x y → 
   P {ω : Ω | M x ω ∈ s} ≤ exp ε * P {ω : Ω | M y ω ∈ s} + δ
 
 def output_diff_private (s : set O) :=
-  ∀ (x y : X) (t : set O) (hs : t ⊆ s), neighboring x y → 
+  ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y → 
   P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t}
 
 structure odp_partition :=

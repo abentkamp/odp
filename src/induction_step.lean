@@ -261,7 +261,7 @@ begin
     intros s hs,
     rw [measure.restrict_apply, measure.restrict_apply],
     rw [measure.map_apply, measure.smul_apply, measure.map_apply],
-    refine p.odp i x₀ x₁ (s ∩ odp_set_for p (some i)) (inter_subset_right _ _) hx,
+    refine p.odp i x₀ x₁ (s ∩ odp_set_for p (some i)) (inter_subset_right _ _) (by measurability) hx,
     apply hM₁,
     { measurability },
     exact hM₁ _,
@@ -282,7 +282,7 @@ section
 include hx hM₁
 lemma pos_hahn_none : pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) ≤ p.δ :=
 begin
-  have := p.dp x₀ x₁ (odp_set_for p none) hx,
+  have := p.dp x₀ x₁ (odp_set_for p none) (by measurability) hx,
   rw [pos_hahn], 
   haveI : ∀ x, finite_measure ((measure.map (λ (ω : Ω₁), M₁ x ω)) P₁) :=
     λ x, measure_theory.finite_measure.map _ (hM₁ _),
@@ -300,7 +300,7 @@ begin
   apply ennreal.sub_le_iff_le_add.2,
   rw [add_comm, measure.map_apply, measure.smul_apply, 
     measure.map_apply],
-  apply p.dp x₀ x₁ (odp_set_for p none ∩ t) hx,
+  apply p.dp x₀ x₁ (odp_set_for p none ∩ t) (by measurability) hx,
   measurability,
 end
 end
