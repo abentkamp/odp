@@ -1,4 +1,4 @@
-import .dp .missing_measure .missing_matrix
+import .diff_private .missing_measure .missing_matrix
 
 /-
 This file defines the role of the adversary and the ODP algorithm.
