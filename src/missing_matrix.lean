@@ -112,4 +112,10 @@ by apply fin.snoc_last
   vec_butlast (vec_snoc u x) = u :=
 by apply fin.init_snoc
 
+def vec_cons.equiv {α : Type*} (n : ℕ) : α × (fin n → α) ≃ (fin n.succ → α) :=
+⟨λ x, vec_cons x.1 x.2,
+ λ x, (vec_head x, vec_tail x), 
+ begin intro x, simp end, 
+ begin intro x, simp end⟩
+
 end matrix

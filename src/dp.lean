@@ -1,6 +1,10 @@
 import measure_theory.constructions.prod
 import .missing_ennreal
 
+/-
+This file defines differential privacy and output differential privacy.
+-/
+
 noncomputable theory
 open measure_theory ennreal 
 open_locale ennreal

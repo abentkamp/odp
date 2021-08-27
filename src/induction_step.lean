@@ -1,32 +1,47 @@
-import .dp .missing_measure
-import missing_integration
-import missing_unsigned_hahn
-import missing_finset
-import missing_measure
+import .dp .missing_integration .missing_unsigned_hahn .missing_finset .missing_measure
 
--- Note that this file does not reference an adversary at all!
+/-
+This file contains the crucial part of the induction step of the main theorem.
+-/
 
 open measure_theory ennreal database_type set
 open_locale ennreal
 open_locale big_operators
+
 local infix ` ⊗ `:50  := measure.prod
 
+/- `Ω₁` and `Ω₂` are sample spaces with associated probability measures `P₁` and `P₂`. -/
 variables {Ω₁ Ω₂ : Type} [measurable_space Ω₁] [measurable_space Ω₂] 
 variables (P₁ : measure Ω₁) (P₂ : measure Ω₂) [probability_measure P₁] [probability_measure P₂]
+
+/- `O₁` and `O₂` are spaces of outputs. -/
 variables {O₁ O₂ : Type} [measurable_space O₁] [measurable_space O₂]
+
+/- `X` is a type of databases. -/
 variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
+
+/- `M₁` is a ODP mechanism -/
 variables (M₁ : X → Ω₁ → O₁) (p : odp_mechanism P₁ M₁)
 variables (hM₁ : ∀ x, measurable (M₁ x))
+
+/- `M₂₀` and `M₂₁` are a random variable depending on the output of `M₁` -/
 variables (M₂₀ M₂₁ : O₁ → Ω₂ → O₂) 
 variables (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ oω.1 oω.2))
 variables (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
+
+/- `ε` and `δ` are usually used to denote the total ε-δ-budget. -/
 variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : p.δ ≤ δ)
 
+/-- The `-` in this definition does not yield a signed measure, but only the
+positive part of the difference, resulting from Hahn decomposition. -/
 noncomputable def pos_hahn : measure O₁ := 
 measure.map (λ ω, M₁ x₀ ω) P₁ - ε.exp • measure.map (λ ω, M₁ x₁ ω) P₁
 
+
 section
 include hM₁ hε
+/-- Since `pos_hahn` is only missing the negative part of the actual difference
+of the two measures, the following inequality holds: -/
 lemma pos_hahn_prop : 
   measure.map (λ ω₁, M₁ x₀ ω₁) P₁ 
     ≤ ε.exp • measure.map (λ ω₁, M₁ x₁ ω₁) P₁ + pos_hahn P₁ x₀ x₁ M₁ ε :=
@@ -49,6 +64,9 @@ begin
 end
 end
 
+/-- We reformulate an assumption about `diff_private_composition` on `M₂₀` and `M₂₁`
+    to incoparate a minimum of `1` and another value. We know that the measure is
+    at most `1` because it is a probability measure. -/
 lemma diff_private_composition_min (s : set (O₁ × O₂)) (hs : measurable_set s) (o₁ : O₁) 
   (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) : 
   P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s} 
@@ -72,6 +90,7 @@ end
 
 section
 include hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
+/-- First, we prove an inequality on a single set `odp_set_for p i` of the ODP partition. -/
 lemma inequality_slice (s : set (O₁ × O₂)) 
   (hs : measurable_set s)
   (i : option p.index) 
@@ -245,9 +264,11 @@ end
 
 section
 include p hx hM₁
+/-- The `pos_hahn` measure is bounded by `δ` and therefore only has volume on
+the `none` slice of the ODP partition. -/
 lemma sum_pos_hahn : 
   begin
-    haveI := p.finite,
+    haveI := p.finite, -- TODO: Make this an external instance.
     exact
   ∑ i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     = pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none)
@@ -279,6 +300,7 @@ end
 
 section
 include hx hM₁
+/-- The volume of `pos_hahn` on the `none` slice is bounded by `p.δ`. -/
 lemma pos_hahn_none : pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) ≤ p.δ :=
 begin
   have := p.dp x₀ x₁ (odp_set_for p none) (by measurability) hx,
@@ -337,6 +359,7 @@ begin
 end
 
 include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
+/-- This is the crucial part of the induction step of the main theorem. -/
 lemma induction_step 
   (h_εusage_for : ∀ i, εusage_for p i ≤ ε)
   (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) 
