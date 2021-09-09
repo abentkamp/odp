@@ -268,9 +268,9 @@ include p hx hM₁
 the `none` slice of the ODP partition. -/
 lemma sum_pos_hahn : 
   begin
-    haveI := p.finite, -- TODO: Make this an external instance.
+    haveI := p.encodable, -- TODO: Make this an external instance.
     exact
-  ∑ i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
+  ∑' i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     = pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none)
   end :=
 begin

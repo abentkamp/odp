@@ -56,9 +56,6 @@ def output_diff_private (s : set O) :=
 there is a partition of the set of outputs `O` into measurable subsets indexed
 by `i` where `M` is `ε_for i`-output differentially private for each `i`. 
 
-TODO: For now, we assume that the partition is finite. We need to generalize it
-to countable partitions.
-
 The partition is realized by a function `partition` that assigns to every
 possible output an index `some i` or `none` if there is no associated 
 `ε_for i`-value for that output. -/
@@ -67,7 +64,7 @@ structure odp_mechanism :=
 (ε_lt_infty : ε < ∞)
 (dp : diff_private P M ε δ)
 (index : Type) 
-[finite : fintype index]
+[encodable : encodable index]
 (partition : O → option index)
 (measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
 (ε_for : option index → ℝ≥0∞)
@@ -140,14 +137,11 @@ instance (p : odp_mechanism P M) : measurable_space (option p.index) := ⊤
 lemma measurable_partition (p : odp_mechanism P M) : 
   measurable (p.partition) :=
 begin
-  haveI : fintype p.index := p.finite,
+  haveI : encodable p.index := p.encodable,
   intros s hs,
   rw ←set.bUnion_preimage_singleton,
   change measurable_set (⋃ i ∈ s, odp_set_for p i),
-  apply set.finite.measurable_set_bUnion,
-  apply set.finite.of_fintype,
-  intros,
-  apply measurable_set_odp_set_for,
+  measurability
 end
 
 lemma union_odp_set_for_eq_univ (p : odp_mechanism P M) : (⋃ i, odp_set_for p i) = set.univ :=
