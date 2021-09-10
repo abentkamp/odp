@@ -5,23 +5,65 @@ import topology.instances.ennreal
 open_locale big_operators
 open_locale topological_space classical
 
+
+lemma tsum_eq_zero {α β : Type*} [add_comm_monoid β] [topological_space β] [t2_space β] : 
+  ∀ (f : α → β), (∀ a, f a = 0) → ∑' a, f a = 0 :=
+begin
+  intros f hf,
+  simp [hf]
+end
+
+
 section sum
 variables {α β γ : Type*} [add_comm_monoid α] [topological_space α] [has_continuous_add α] [t2_space α] {f : β ⊕ γ → α} {a b : α}
 open filter set
 
+#check finset.sum_image
+#check finset.sum_map
+#check finset.sum_filter 
+#check finset.sum_subtype_eq_sum_filter
+
+#check finset.map_filter
+
+-- lemma tendsto_finset_preimage_at_top (f : β → γ) (hf : function.injective f) : 
+--   tendsto (λ (s : finset γ), s.preimage f (set.inj_on_of_injective hf _)) at_top at_top :=
+-- begin
+
+-- end
+
 lemma has_sum_of_has_sum_inl_inr (hl : has_sum (f ∘ sum.inl) a) (hr : has_sum (f ∘ sum.inr) b) : has_sum f (a + b) :=
 begin
-  unfold has_sum at hl hr,
-  have hl' : tendsto (λ (s : finset (β ⊕ γ)), ∑ b in s.filter (set.range sum.inl), f b) at_top (𝓝 a) := sorry, -- use hl
-  have hr' : tendsto (λ (s : finset (β ⊕ γ)), ∑ b in s.filter (set.range sum.inr), f b) at_top (𝓝 b) := sorry, -- use hr
+  have : tendsto (λ s : finset (β ⊕ γ), s.preimage sum.inl (set.inj_on_of_injective sum.inl_injective _)) at_top at_top,
+    exact tendsto_finset_preimage_at_top_at_top sum.inl_injective,
+  have : tendsto (λ (s : finset (β ⊕ γ)), ∑ (b : β) in s.preimage sum.inl _, f (sum.inl b)) at_top (𝓝 a),
+    convert tendsto.comp hl (tendsto_finset_preimage_at_top_at_top sum.inl_injective),
+  have hl' : tendsto (λ (s : finset (β ⊕ γ)), ∑ b in s.filter (set.range sum.inl), f b) at_top (𝓝 a),
+    simpa [finset.sum_preimage', (∘)] using this,
+
+  have : tendsto (λ s : finset (β ⊕ γ), s.preimage sum.inr (set.inj_on_of_injective sum.inr_injective _)) at_top at_top,
+    exact tendsto_finset_preimage_at_top_at_top sum.inr_injective,
+  have : tendsto (λ (s : finset (β ⊕ γ)), ∑ (c : γ) in s.preimage sum.inr _, f (sum.inr c)) at_top (𝓝 b),
+    convert tendsto.comp hr (tendsto_finset_preimage_at_top_at_top sum.inr_injective),
+  have hr' : tendsto (λ (s : finset (β ⊕ γ)), ∑ c in s.filter (set.range sum.inr), f c) at_top (𝓝 b),
+    simpa [finset.sum_preimage', (∘)] using this,
+
   convert filter.tendsto.add hl' hr',
     unfold has_sum,
   congr',
   ext s,
   rw ←finset.sum_union,
   rw finset.filter_union_right,
-  sorry,
-  sorry,
+  { congr',
+    convert finset.filter_true.symm,
+    exact range_inl_union_range_inr,
+    apply_instance },
+  { rw finset.disjoint_filter,
+    intros a ha hl hr,
+    apply set.not_mem_empty,
+    rw ←set.range_inl_inter_range_inr,
+    apply set.mem_inter,
+    apply hl,
+    apply hr }
 end
 
 lemma summable_of_summable_inl_inr
