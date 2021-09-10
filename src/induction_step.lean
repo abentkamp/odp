@@ -1,4 +1,4 @@
-import .diff_private .missing_integration .missing_unsigned_hahn .missing_finset .missing_measure .missing_tsum
+import .diff_private .missing_integration .missing_unsigned_hahn .missing_finset .missing_measure .missing_tsum .missing_tsum_ennreal
 import topology.instances.ennreal
 /-
 This file contains the crucial part of the induction step of the main theorem.
@@ -450,12 +450,11 @@ end
 ... = ε.exp * ∑' (b : option p.index),
       (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
              s ∩ (odp_set_for p b).prod univ}
-    + (∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i))
+    + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     + (δ - p.δ) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
 begin
+  -- have := ennreal.sum_to_real,
   sorry -- TODO: swap multiplication and tsum
-   --simp only [finset.mul_sum]
-   -- TODO: look into ennreal.summable_to_nnreal_of_tsum_ne_top and related lemmas
 end  
 ... = ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) +
