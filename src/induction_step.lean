@@ -453,8 +453,8 @@ end
     + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     + (δ - p.δ) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
 begin
-  -- have := ennreal.sum_to_real,
-  sorry -- TODO: swap multiplication and tsum
+  rw ennreal.tsum_mul_left,
+  rw ennreal.tsum_mul_left,
 end  
 ... = ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) +
