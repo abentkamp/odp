@@ -18,19 +18,6 @@ section sum
 variables {α β γ : Type*} [add_comm_monoid α] [topological_space α] [has_continuous_add α] [t2_space α] {f : β ⊕ γ → α} {a b : α}
 open filter set
 
-#check finset.sum_image
-#check finset.sum_map
-#check finset.sum_filter 
-#check finset.sum_subtype_eq_sum_filter
-
-#check finset.map_filter
-
--- lemma tendsto_finset_preimage_at_top (f : β → γ) (hf : function.injective f) : 
---   tendsto (λ (s : finset γ), s.preimage f (set.inj_on_of_injective hf _)) at_top at_top :=
--- begin
-
--- end
-
 lemma has_sum_of_has_sum_inl_inr (hl : has_sum (f ∘ sum.inl) a) (hr : has_sum (f ∘ sum.inr) b) : has_sum f (a + b) :=
 begin
   have : tendsto (λ s : finset (β ⊕ γ), s.preimage sum.inl (set.inj_on_of_injective sum.inl_injective _)) at_top at_top,

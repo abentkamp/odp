@@ -50,7 +50,7 @@ def diff_private_composition :=
 /-- Output differential privacy on a given set `s` of outputs -/
 def output_diff_private (s : set O) :=
   ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y → 
-  P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t}
+  P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t} + δ
 
 /-- An ODP mechanism is an `ε`-`δ`-differentially private mechanism such that
 there is a partition of the set of outputs `O` into measurable subsets indexed
@@ -69,7 +69,8 @@ structure odp_mechanism :=
 (measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
 (ε_for : option index → ℝ≥0∞)
 (ε_for_lt_infty : ∀ i, ε_for i < ∞)
-(odp : ∀ i, output_diff_private P M (ε_for i) {o : O | partition o = i})
+(δ_for : index → ℝ≥0∞)
+(odp : ∀ (i : index), output_diff_private P M (ε_for i) (δ_for i) {o : O | partition o = i})
 
 -- TODO: Example instance
 
@@ -92,6 +93,9 @@ end
 /-- To determine the ε-usage for a certain output, we look up its partition and
 refer to `εusage_for`. -/
 def εusage (p : odp_mechanism P M) (o : O) := εusage_for p (p.partition o)
+
+/-- To determine the δ-usage for a certain output, we sum up all δ values. -/
+def δusage (p : odp_mechanism P M) := p.δ + ∑' i : p.index, p.δ_for i
 
 /-- The set of outputs associated with an index `i` -/
 def odp_set_for (p : odp_mechanism P M) : option p.index → set O :=

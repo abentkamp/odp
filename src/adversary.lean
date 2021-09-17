@@ -24,7 +24,7 @@ structure adversary_choice (ε δ : ℝ≥0∞) :=
 (M : X → Ω → O)
 (odp_mechanism : odp_mechanism P M)
 (hε : odp_mechanism.ε ≤ ε)
-(hδ : odp_mechanism.δ ≤ δ)
+(hδ : δusage odp_mechanism ≤ δ)
 (hε_for : ∀ i, odp_mechanism.ε_for i ≤ ε)
 (x : fin 2 → X)
 (hx : neighboring (x 0) (x 1))
@@ -50,7 +50,7 @@ structure adversary_n (n : ℕ) :=
 (measurable_δ : 
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
   measurable os → measurable ε →  measurable δ →
-  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).odp_mechanism.δ))
+  measurable (λ (a : α), δusage (choose (os a) (ε a) (δ a)).odp_mechanism))
 
 /-- An adversary is a collection of `adversary_n` structures for each number of iterations `n`. -/
 def adversary := Π (n : ℕ), adversary_n P O X n
@@ -143,7 +143,7 @@ noncomputable def odp_composition : Π (𝒜 : adversary P O X) (n : ℕ) (bit :
   -- We calculate the remaining ε-budget.
   let ε' := ε - εusage 𝒜_choice.odp_mechanism o in 
   -- We calculate the remaining δ-budget.
-  let δ' := δ - 𝒜_choice.odp_mechanism.δ in 
+  let δ' := δ - δusage 𝒜_choice.odp_mechanism in 
   -- We inform the adversary about the new output.
   let 𝒜' := inform 𝒜 o in 
   -- We return the output and enter the next iteration for the remaining outputs.

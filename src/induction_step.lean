@@ -30,7 +30,7 @@ variables (h_measurable_M₂₀ : measurable (λ (oω : O₁ × Ω₂), M₂₀ 
 variables (h_measurable_M₂₁ : measurable (λ (oω : O₁ × Ω₂), M₂₁ oω.1 oω.2))
 
 /- `ε` and `δ` are usually used to denote the total ε-δ-budget. -/
-variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : p.δ ≤ δ)
+variables (ε δ : ℝ≥0∞) (hε : ε < ∞) (hδ : δusage p ≤ δ)
 
 /-- The `-` in this definition does not yield a signed measure, but only the
 positive part of the difference, resulting from Hahn decomposition. -/
@@ -68,21 +68,21 @@ end
     to incoparate a minimum of `1` and another value. We know that the measure is
     at most `1` because it is a probability measure. -/
 lemma diff_private_composition_min (s : set (O₁ × O₂)) (hs : measurable_set s) (o₁ : O₁) 
-  (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) : 
+  (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - δusage p)) : 
   P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s} 
-    ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ) :=
+    ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - δusage p) :=
 calc P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s} = min 1 (P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}) :
 begin
   rw min_eq_right,
   apply prob_le_one,
 end
-... ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s} + (δ - p.δ)) :
+... ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s} + (δ - δusage p)) :
 begin
   refine min_le_min (le_refl _) _,
   apply hM₂ o₁ {o₂ : O₂ | (o₁, o₂) ∈ s},
   apply measurable_prod_mk_left hs,
 end
-... ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ) :
+... ≤ min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - δusage p) :
 begin
   rw min_add_distrib,
   exact le_trans (min_le_right _ _) (add_le_add (le_refl _) (min_le_right _ _)),
@@ -96,11 +96,11 @@ lemma inequality_slice (s : set (O₁ × O₂))
   (i : option p.index) 
   (hsi : s ⊆ (odp_set_for p i).prod univ)
   (h_εusage_for : εusage_for p i ≤ ε)
-  (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - p.δ)) :
+  (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) (ε - εusage p o₁) (δ - δusage p)) :
 (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
     + pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :=
+    + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :=
 begin
   -- First some measurability results:
   -- TODO: Avoid repetitions
@@ -169,7 +169,7 @@ begin
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 }
 end
 ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
-  min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ)
+  min 1 ((ε - εusage p o₁).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - δusage p)
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ :
 begin
   apply lintegral_mono,
@@ -179,7 +179,7 @@ begin
   apply hM₂,
 end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i,
-  min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - p.δ)
+  min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) + (δ - δusage p)
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ :
 begin
   apply set_lintegral_fun_congr,
@@ -190,7 +190,7 @@ end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i,
       min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s})
     ∂measure.map (λ (ω₁ : Ω₁), M₁ x₀ ω₁) P₁
-    + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :
+    + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :
 begin
   rw [lintegral_add, lintegral_const, measure.restrict_apply_univ, measure.map_apply],
   refl,
@@ -209,7 +209,7 @@ end
 ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
       min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
     ∂((εusage_for p i).exp • measure.map (λ ω₁, M₁ x₁ ω₁) P₁ + pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i))
-    + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :
+    + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :
 begin
   refine add_le_add _ (le_refl _),
   refine measure_theory.lintegral_mono' _ (le_refl _),
@@ -221,7 +221,7 @@ end
       ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
       ∂(εusage_for p i).exp • measure.map (λ (ω₁ : Ω₁), M₁ x₁ ω₁) P₁ +
     ∫⁻ (o₁ : O₁) in odp_set_for p i, 1 ∂pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i)
-  + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
+  + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
 begin
   rw measure.restrict_add,
   rw lintegral_add_measure,
@@ -233,7 +233,7 @@ end
         P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s} 
         ∂measure.map (λ (ω₁ : Ω₁), M₁ x₁ ω₁) P₁
      + pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-     + (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
+     + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
 begin
   rw [lintegral_const_mul, measure.restrict_smul, lintegral_smul_measure],
   rw [←mul_assoc, ←exp_add, ennreal.sub_add_cancel_of_le],
@@ -244,7 +244,7 @@ end
  ... = 
  ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i) +
-  (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
+  (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} : 
 begin
   rw ←set_lintegral_nonzero,
   rw lintegral_map,
@@ -259,43 +259,6 @@ begin
     rw eq_empty_iff_forall_not_mem,
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 },
 end
-end
-end
-
-section
-include p hx hM₁
-/-- The `pos_hahn` measure is bounded by `δ` and therefore only has volume on
-the `none` slice of the ODP partition. -/
-lemma sum_pos_hahn : 
-  begin
-    haveI := p.encodable, -- TODO: Make this an external instance.
-    exact
-  ∑' i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    = pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none)
-  end :=
-begin
-  have h_eq_zero : ∀ (i : p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p (some i)) (odp_set_for p (some i)) = 0,
-  { intro i,
-    apply measure.sub_apply_eq_zero_of_restrict_le_restrict,
-    rw measure.le_iff,
-    intros s hs,
-    rw [measure.restrict_apply, measure.restrict_apply],
-    rw [measure.map_apply, measure.smul_apply, measure.map_apply],
-    refine p.odp i x₀ x₁ (s ∩ odp_set_for p (some i)) (inter_subset_right _ _) (by measurability) hx,
-    apply hM₁,
-    { measurability },
-    exact hM₁ _,
-    { measurability },
-    exact hs,
-    exact hs,
-    { measurability } },
-  rw tsum_option,
-  rw tsum_congr,
-  rw tsum_eq_zero,
-  rw zero_add,
-  apply h_eq_zero,
-  exact (λ x, rfl),
-  apply ennreal.summable,
 end
 end
 
@@ -324,6 +287,51 @@ begin
     measure.map_apply],
   apply p.dp x₀ x₁ (odp_set_for p none ∩ t) (by measurability) hx,
   measurability,
+end
+end
+
+
+section
+include hx hM₁
+lemma pos_hahn_some (i : p.index) : 
+  pos_hahn P₁ x₀ x₁ M₁ (εusage_for p (some i)) (odp_set_for p (some i))
+    ≤ p.δ_for i :=
+begin --TODO: Dediplicate with above?
+  rw [pos_hahn], 
+  haveI : ∀ x, finite_measure ((measure.map (λ (ω : Ω₁), M₁ x ω)) P₁) :=
+    λ x, measure_theory.finite_measure.map _ (hM₁ _),
+  haveI : finite_measure ((εusage_for p (some i)).exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) := 
+  begin 
+    apply measure_theory.finite_measure.smul,
+    apply ennreal.exp_lt_top_of_lt_top,
+    apply εusage_for_lt_infty,
+  end,
+  rcases @measure.sub_apply_finite _ _
+    (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁)
+    ((εusage_for p (some i)).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) _ _ _ _
+    with ⟨t, ht₁, ht₂⟩,
+  rw ht₂,
+  apply ennreal.sub_le_iff_le_add.2,
+  rw [add_comm, measure.map_apply, measure.smul_apply, 
+    measure.map_apply],
+  apply p.odp i,
+  { apply set.inter_subset_left },
+  measurability
+end
+end
+
+section
+include hx hM₁
+lemma sum_pos_hahn : 
+  ∑' i : option p.index, pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
+    ≤ δusage p :=
+begin
+  rw [tsum_option _ ennreal.summable, add_comm],
+  unfold δusage,
+  refine add_le_add _ _,
+  { exact pos_hahn_none _ _ _ hx _ p hM₁, },
+  { refine tsum_le_tsum _ ennreal.summable ennreal.summable,
+    exact pos_hahn_some _ _ _ hx _ p hM₁,}
 end
 end
 
@@ -364,7 +372,7 @@ include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 lemma induction_step 
   (h_εusage_for : ∀ i, εusage_for p i ≤ ε)
   (hM₂ : ∀ o₁ : O₁, diff_private_composition P₂ (M₂₀ o₁) (M₂₁ o₁) 
-    (ε - εusage p o₁) (δ - p.δ)) : 
+    (ε - εusage p o₁) (δ - δusage p)) : 
   diff_private_composition (P₁ ⊗ P₂) 
     (λ ω, prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2))
     (λ ω, prod.mk (M₁ x₁ ω.1) (M₂₁ (M₁ x₁ ω.1) ω.2)) ε δ :=
@@ -403,26 +411,24 @@ calc
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
   ... = ∑' (i : option p.index), 
     (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} : 
-  begin
-    rw ←measure_Union _,
-    apply congr_arg,
-    convert ←preimage_Union,
-    rw ←split_set p s,
-    exact measurable_set_preimage_s_inter₀,
-    apply_instance,
-    { apply pairwise_disjoint_on_preimage,
-      apply pairwise_disjoint_on_inter,
-      apply pairwise_disjoint_on_prod (odp_set_for p) univ,
-      apply pairwise_disjoint_on_odp_set_for, }
-  end
+begin
+  rw ←measure_Union _,
+  apply congr_arg,
+  convert ←preimage_Union,
+  rw ←split_set p s,
+  exact measurable_set_preimage_s_inter₀,
+  apply_instance,
+  { apply pairwise_disjoint_on_preimage,
+    apply pairwise_disjoint_on_inter,
+    apply pairwise_disjoint_on_prod (odp_set_for p) univ,
+    apply pairwise_disjoint_on_odp_set_for, }
+end
 ... ≤ ∑' (i : option p.index), 
   (ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} +
     pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i) +
-  (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i})  : 
+  (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i})  : 
 begin
-  refine tsum_mono _ _ _,
-  { apply ennreal.summable },
-  { apply ennreal.summable },
+  refine tsum_mono ennreal.summable ennreal.summable _,
   intro i,
   apply inequality_slice,
   apply hM₁,
@@ -438,7 +444,7 @@ end
       ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
              s ∩ (odp_set_for p b).prod univ}
     + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    + ∑' (i : option p.index), (δ - p.δ) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
+    + ∑' (i : option p.index), (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
 begin
   unfold pos_hahn,
   rw [tsum_add, tsum_add],
@@ -451,14 +457,14 @@ end
       (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
              s ∩ (odp_set_for p b).prod univ}
     + ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
-    + (δ - p.δ) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
+    + (δ - δusage p) * ∑' (i : option p.index), P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}  : 
 begin
   rw ennreal.tsum_mul_left,
   rw ennreal.tsum_mul_left,
 end  
 ... = ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
-    pos_hahn P₁ x₀ x₁ M₁ (εusage_for p none) (odp_set_for p none) +
-  (δ - p.δ) * P₁ (⋃ (i : option p.index), {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}) : 
+    ∑' (i : option p.index), pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i) +
+  (δ - δusage p) * P₁ (⋃ (i : option p.index), {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i}) : 
 begin
   have : (⋃ i, (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd)) ⁻¹'
               (s ∩ (odp_set_for p i).prod univ))
@@ -476,7 +482,6 @@ begin
       apply pairwise_disjoint_on_inter,
       apply pairwise_disjoint_on_prod (odp_set_for p) univ,
       apply pairwise_disjoint_on_odp_set_for, }, },
-  { convert sum_pos_hahn P₁ x₀ x₁ hx M₁ p hM₁, },
   { rw ←measure_Union _, 
     { measurability },
     apply_instance,
@@ -484,11 +489,11 @@ begin
       apply pairwise_disjoint_on_odp_set_for, } }
 end
 ... ≤ ε.exp * (P₁ ⊗ P₂) {ω | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
-    p.δ + (δ - p.δ) : 
+    δusage p + (δ - δusage p) : 
 begin
   refine add_le_add _ _,
   { refine add_le_add_left _ _,
-    apply pos_hahn_none,
+    apply sum_pos_hahn,
     apply hx,
     apply hM₁ },
   { convert ennreal.mul_le_mul _ _,
