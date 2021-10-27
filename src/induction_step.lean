@@ -88,7 +88,7 @@ begin
   exact le_trans (min_le_right _ _) (add_le_add (le_refl _) (min_le_right _ _)),
 end
 
-  -- Some measurability results (TODO: Deduplicate with above)
+/- Some measurability results -/
 section
 include hM₁ h_measurable_M₂₀
 @[measurability]
@@ -332,6 +332,17 @@ begin
 end
 end
 
+lemma pairwise_disjoint_mem_inter_odp_set_for (s : set (O₁ × O₂)) :
+  pairwise (disjoint on λ (i : option p.index),
+    {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈
+      s ∩ (odp_set_for p i).prod univ}) :=
+begin
+  apply pairwise_disjoint_on_preimage,
+  apply pairwise_disjoint_on_inter,
+  apply pairwise_disjoint_on_prod (odp_set_for p) univ,
+  apply pairwise_disjoint_on_odp_set_for
+end
+
 include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 /-- This is the crucial part of the induction step of the main theorem. -/
 lemma induction_step
@@ -357,10 +368,7 @@ begin
   apply measurable_set_preimage_s_inter _ _ _ _ hM₁ _ h_measurable_M₂₀ s hs,
   apply_instance,
   apply_instance,
-  { apply pairwise_disjoint_on_preimage,
-    apply pairwise_disjoint_on_inter,
-    apply pairwise_disjoint_on_prod (odp_set_for p) univ,
-    apply pairwise_disjoint_on_odp_set_for, }
+  apply pairwise_disjoint_mem_inter_odp_set_for
 end
 ... ≤ ∑' (i : option p.index),
   (ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s ∩ (odp_set_for p i).prod univ} +
@@ -418,10 +426,7 @@ begin
     apply measurable_set_preimage_s_inter _ _ _ _ hM₁ _ h_measurable_M₂₁ s hs,
     apply_instance,
     apply_instance,
-    { apply pairwise_disjoint_on_preimage, -- TODO: Deduplicate
-      apply pairwise_disjoint_on_inter,
-      apply pairwise_disjoint_on_prod (odp_set_for p) univ,
-      apply pairwise_disjoint_on_odp_set_for, }, },
+    apply pairwise_disjoint_mem_inter_odp_set_for },
   { rw ←measure_Union _,
     { measurability },
     apply_instance,
