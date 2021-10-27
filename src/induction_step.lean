@@ -88,6 +88,55 @@ begin
   exact le_trans (min_le_right _ _) (add_le_add (le_refl _) (min_le_right _ _)),
 end
 
+  -- Some measurability results (TODO: Deduplicate with above)
+section
+include hM₁ h_measurable_M₂₀
+@[measurability]
+lemma measurable_M₂_M₁ : measurable (λ (x : Ω₁ × Ω₂), M₂₀ (M₁ x₀ x.fst) x.snd) :=
+begin
+  apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
+  measurability
+end
+end
+
+section
+include hM₁ h_measurable_M₂₀
+@[measurability]
+lemma measurable_set_preimage_s_inter (s: set (O₁ × O₂)) (hs: measurable_set s) :
+∀ (i : option p.index), measurable_set
+    {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ} :=
+begin
+  intro i,
+  apply measurable.prod_mk,
+  measurability
+end
+end
+
+section
+include h_measurable_M₂₀
+@[measurability]
+lemma measurable_P₂_M₂ (s : set (O₁ × O₂)) (hs : measurable_set s) :
+  measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₀ a ω₂) ∈ s}) :=
+begin
+  have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
+  { apply measurable.prod,
+    measurability },
+  apply measurable_measure_prod_mk_left this,
+  apply_instance
+end
+end
+
+section
+include hM₁ h_measurable_M₂₀
+@[measurability]
+lemma measurable_set_M₁_M₂ (s : set (O₁ × O₂)) (hs : measurable_set s) :
+  measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s} :=
+begin
+  apply measurable.prod_mk,
+  measurability
+end
+end
+
 section
 include hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 /-- First, we prove an inequality on a single set `odp_set_for p i` of the ODP partition. -/
@@ -101,46 +150,19 @@ lemma inequality_slice (s : set (O₁ × O₂))
   ≤ ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s}
     + pos_hahn P₁ x₀ x₁ M₁ (εusage_for p i) (odp_set_for p i)
     + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :=
-begin
-  -- First some measurability results:
-  have h_measurable_M₂₀' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₀ a ω₂) ∈ s}),
-  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
-      { apply measurable.prod,
-        measurability },
-      apply measurable_measure_prod_mk_left this,
-      apply_instance },
-  have h_measurable_M₂₁' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₁ a ω₂) ∈ s}),
-  { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₁ oω.1 oω.2) ∈ s}, -- This was tricky!
-    { apply measurable.prod,
-      measurability },
-    apply measurable_measure_prod_mk_left this,
-    apply_instance },
-  have h_measurable_set_0 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s},
-  { apply measurable.prod_mk,
-    { measurability },
-    { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
-      measurability },
-    exact hs },
-  have h_measurable_set_1 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈ s},
-  { apply measurable.prod_mk,
-    { measurability },
-    { apply measurable.comp h_measurable_M₂₁ (measurable.prod_mk _ _),
-      measurability },
-    exact hs },
-  -- And now the actual calculation: 
-  exact calc
+calc
   (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.1, M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} 
  = ∫⁻ (ω₁ : Ω₁), P₂ {ω₂ : Ω₂ | (M₁ x₀ ω₁, M₂₀ (M₁ x₀ ω₁) ω₂) ∈ s} ∂P₁ : 
 begin
   rw measure.prod_apply,
   refl,
-  exact h_measurable_set_0
+  apply measurable_set_M₁_M₂ _ M₁ hM₁ _ h_measurable_M₂₀ s hs,
 end
 ... = ∫⁻ (o₁ : O₁), P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
   ∂measure.map (λ ω₁, M₁ x₀ ω₁) P₁ : 
 begin
   rw lintegral_map,
-  exact h_measurable_M₂₀',
+  apply measurable_P₂_M₂ P₂ _ h_measurable_M₂₀ s hs,
   apply hM₁,
 end
 ... = ∫⁻ (o₁ : O₁) in odp_set_for p i, P₂ {ω₂ : Ω₂ | (o₁, M₂₀ o₁ ω₂) ∈ s}
@@ -180,16 +202,7 @@ begin
   rw [lintegral_add, lintegral_const, measure.restrict_apply_univ, measure.map_apply],
   refl,
   apply hM₁,
-  apply measurable_set_odp_set_for,
-  apply measurable.min measurable_const,
-  apply measurable.mul measurable_const,
-  apply h_measurable_M₂₁',
-  apply ennreal.has_measurable_mul₂,
-  apply_instance,
-  apply_instance,
-  apply_instance,
-  apply_instance,
-  apply measurable_const,
+  measurability,
 end
 ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
       min 1 ((ε - εusage_for p i).exp * P₂ {ω₂ : Ω₂ | (o₁, M₂₁ o₁ ω₂) ∈ s}) 
@@ -224,7 +237,7 @@ begin
   rw [←mul_assoc, ←exp_add, ennreal.sub_add_cancel_of_le],
   rw [lintegral_one, measure.restrict_apply_univ],
   apply h_εusage_for,
-  exact h_measurable_M₂₁',
+  apply measurable_P₂_M₂ P₂ _ h_measurable_M₂₁ s hs,
 end
  ... = 
  ε.exp * (P₁ ⊗ P₂) {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.1, M₂₁ (M₁ x₁ ω.1) ω.2) ∈ s} +
@@ -235,15 +248,14 @@ begin
   rw lintegral_map,
   rw measure.prod_apply,
   refl,
-  exact h_measurable_set_1,
-  exact h_measurable_M₂₁',
+  apply measurable_set_M₁_M₂ _ M₁ hM₁ _ h_measurable_M₂₁ s hs,
+  apply measurable_P₂_M₂ P₂ _ h_measurable_M₂₁ s hs,
   exact hM₁ _,
   apply measurable_set_odp_set_for,
   { intros o₁ ho₁,
     convert measure_empty,
     rw eq_empty_iff_forall_not_mem,
     exact λ ω₂ hω₂, ho₁ (mem_prod.1 (hsi hω₂)).1 },
-end
 end
 end
 
@@ -332,34 +344,7 @@ lemma induction_step
 begin
   intros s hs,
   haveI : encodable (option p.index) := @encodable.option _ p.encodable,
-  -- Some measurability results (TODO: Deduplicate with above)
-  have measurable_set_preimage_s_inter₀ : ∀ (i : option p.index), measurable_set
-    {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ},
-  { intro i,
-    apply measurable.prod_mk,
-    { apply measurable.comp,
-      apply hM₁,
-      apply measurable_fst },
-    show measurable ((λ (a : O₁ × Ω₂), M₂₀ a.1 a.2) 
-      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₀ ω.1, ω.2))),
-    { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
-      apply measurable.comp (hM₁ _) measurable_fst,
-      apply measurable_snd },
-    measurability },
-  have measurable_set_preimage_s_inter₁ : ∀ (i : option p.index), measurable_set
-    {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈ s ∩ (odp_set_for p i).prod univ},
-  { intro i,
-    apply measurable.prod_mk,
-    { apply measurable.comp,
-      apply hM₁,
-      apply measurable_fst },
-    show measurable ((λ (a : O₁ × Ω₂), M₂₁ a.1 a.2) 
-      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.1, ω.2))),
-    { apply measurable.comp h_measurable_M₂₁ (measurable.prod_mk _ _),
-      apply measurable.comp (hM₁ _) measurable_fst,
-      apply measurable_snd },
-    measurability },
-calc 
+calc
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} =
   (P₁ ⊗ P₂) {ω | prod.mk (M₁ x₀ ω.1) (M₂₀ (M₁ x₀ ω.1) ω.2) ∈ s} : rfl
   ... = ∑' (i : option p.index), 
@@ -369,7 +354,8 @@ begin
   apply congr_arg,
   convert ←preimage_Union,
   rw ←split_set p s,
-  exact measurable_set_preimage_s_inter₀,
+  apply measurable_set_preimage_s_inter _ _ _ _ hM₁ _ h_measurable_M₂₀ s hs,
+  apply_instance,
   apply_instance,
   { apply pairwise_disjoint_on_preimage,
     apply pairwise_disjoint_on_inter,
@@ -428,8 +414,9 @@ begin
   congr,
   { rw ←measure_Union _, 
     congr,
-    exact this, 
-    apply measurable_set_preimage_s_inter₁,
+    exact this,
+    apply measurable_set_preimage_s_inter _ _ _ _ hM₁ _ h_measurable_M₂₁ s hs,
+    apply_instance,
     apply_instance,
     { apply pairwise_disjoint_on_preimage, -- TODO: Deduplicate
       apply pairwise_disjoint_on_inter,
