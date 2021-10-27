@@ -1,4 +1,4 @@
-import .diff_private .missing_integration .missing_unsigned_hahn .missing_finset .missing_measure .missing_tsum .missing_tsum_ennreal
+import .diff_private .missing_integration .missing_unsigned_hahn .missing_pairwise_disjoint .missing_finset .missing_measure .missing_tsum .missing_tsum_ennreal
 import topology.instances.ennreal
 /-
 This file contains the crucial part of the induction step of the main theorem.
@@ -103,44 +103,29 @@ lemma inequality_slice (s : set (O₁ × O₂))
     + (δ - δusage p) * P₁ {ω₁ : Ω₁ | M₁ x₀ ω₁ ∈ odp_set_for p i} :=
 begin
   -- First some measurability results:
-  -- TODO: Avoid repetitions
   have h_measurable_M₂₀' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₀ a ω₂) ∈ s}),
   { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₀ oω.1 oω.2) ∈ s}, -- This was tricky!
       { apply measurable.prod,
-        apply measurable_fst,
-        apply h_measurable_M₂₀,
-        apply hs },
+        measurability },
       apply measurable_measure_prod_mk_left this,
       apply_instance },
   have h_measurable_M₂₁' : measurable (λ (a : O₁), P₂ {ω₂ : Ω₂ | (a, M₂₁ a ω₂) ∈ s}),
   { have : measurable_set {oω : O₁ × Ω₂ | (oω.1, M₂₁ oω.1 oω.2) ∈ s}, -- This was tricky!
     { apply measurable.prod,
-      apply measurable_fst,
-      apply h_measurable_M₂₁,
-      apply hs },
+      measurability },
     apply measurable_measure_prod_mk_left this,
     apply_instance },
   have h_measurable_set_0 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₀ ω.fst, M₂₀ (M₁ x₀ ω.fst) ω.snd) ∈ s},
   { apply measurable.prod_mk,
-    { apply measurable.comp,
-      apply hM₁,
-      apply measurable_fst },
-    show measurable ((λ (a : O₁ × Ω₂), M₂₀ a.1 a.2) 
-      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₀ ω.1, ω.2))),
+    { measurability },
     { apply measurable.comp h_measurable_M₂₀ (measurable.prod_mk _ _),
-      apply measurable.comp (hM₁ _) measurable_fst,
-      apply measurable_snd },
+      measurability },
     exact hs },
   have h_measurable_set_1 : measurable_set {ω : Ω₁ × Ω₂ | (M₁ x₁ ω.fst, M₂₁ (M₁ x₁ ω.fst) ω.snd) ∈ s},
   { apply measurable.prod_mk,
-    { apply measurable.comp,
-      apply hM₁,
-      apply measurable_fst },
-    show measurable ((λ (a : O₁ × Ω₂), M₂₁ a.1 a.2) 
-      ∘ (λ ω : Ω₁ × Ω₂, (M₁ x₁ ω.1, ω.2))),
+    { measurability },
     { apply measurable.comp h_measurable_M₂₁ (measurable.prod_mk _ _),
-      apply measurable.comp (hM₁ _) measurable_fst,
-      apply measurable_snd },
+      measurability },
     exact hs },
   -- And now the actual calculation: 
   exact calc
@@ -333,38 +318,6 @@ begin
   { refine tsum_le_tsum _ ennreal.summable ennreal.summable,
     exact pos_hahn_some _ _ _ hx _ p hM₁,}
 end
-end
-
---TODO: move
-lemma pairwise_disjoint_on_preimage {ι α β : Type*} (f : α → β) (s : ι → set β) (h : pairwise (disjoint on s)) : 
-  pairwise (disjoint on (λ i, f ⁻¹' (s i))) :=
-begin
-  intros i j hij a ha,
-  apply h i j hij (set.mem_inter _ _),
-  exact f a,
-  apply ((set.mem_inter_iff _ _ _).1 ha).1,
-  apply ((set.mem_inter_iff _ _ _).1 ha).2,
-end
-
---TODO: move
-lemma pairwise_disjoint_on_inter {ι β : Type*} (s : ι → set β) (t : set β) (h : pairwise (disjoint on s)) : 
-  pairwise (disjoint on λ i, t ∩ s i) :=
-begin
-  intros i j hij a ha,
-  apply h i j hij (set.mem_inter _ _),
-  exact mem_of_mem_inter_right ha.1,
-  exact mem_of_mem_inter_right ha.2,
-end
-
---TODO: move
-lemma pairwise_disjoint_on_prod {ι α β : Type*} (s : ι → set α) (t : set β) (h : pairwise (disjoint on s)) : 
-  pairwise (disjoint on λ i, (s i).prod t) :=
-begin
-  intros i j hij a ha,
-  apply h i j hij (set.mem_inter _ _),
-  exact a.1,
-  apply (set.mem_prod.2 ha.1).1,
-  apply (set.mem_prod.2 ha.2).1,
 end
 
 include hx hδ hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
