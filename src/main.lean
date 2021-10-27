@@ -6,7 +6,7 @@ open measure_theory ennreal database_type matrix
 open_locale ennreal
 open_locale matrix
 
-local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ), 
+local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ),
   measure.pi (λ i : fin n, μ)
 
 local infix ` ⊗ `:50  := measure.prod
@@ -18,15 +18,15 @@ variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞
 
 /-- This auxiliary definition is a fragment of the `odp_composition` algortithm,
 but assumes that the current output `o` has already been sampled. -/
-noncomputable def odp_composition₀ (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=     
+noncomputable def odp_composition₀ (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=
   let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ in
   let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o in
   let δ' : ℝ≥0∞ := δ - δusage 𝒜_choice.odp_mechanism in
-  let 𝒜' := inform 𝒜 o in 
+  let 𝒜' := inform 𝒜 o in
   odp_composition 𝒜' n bit ε' δ' ω
 
-lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω] 
-  (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) : 
+lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω]
+  (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) :
   let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
   diff_private_composition P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_composition P M₀ M₁ ε δ :=
 begin
@@ -47,7 +47,7 @@ end
 Note: I haven't been able to prove this using an adversary that gets fed a list instead of a vector
 because lists are currently not instantiated as a measurable space.
 -/
-lemma measurable_set_odp_composition {n : ℕ} {α : Type} [measurable_space α] 
+lemma measurable_set_odp_composition {n : ℕ} {α : Type} [measurable_space α]
   (m : ℕ) (os : α → (fin m → O)) (ε δ : α → ℝ≥0∞) (ω : α → (fin n → Ω))
   (hos : measurable os) (hε : measurable ε) (hδ : measurable δ) (hω : measurable ω) :
   measurable (λ a : α, odp_composition (inform_vec 𝒜 m (os a)) n bit (ε a) (δ a) (ω a)) :=
@@ -78,7 +78,7 @@ begin
         apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
         apply (𝒜 m).measurable_x bit hos hε hδ, },
       { apply measurable.sub hδ,
-        suffices : measurable (λ (a : α), 
+        suffices : measurable (λ (a : α),
           δusage ((𝒜 m).choose (os a) (ε a) (δ a)).odp_mechanism),
         { convert this, apply funext, intro i,
           rw inform_vec_choose 𝒜 (os i) },
@@ -90,12 +90,12 @@ end
 lemma measurable_set_odp_composition' {n : ℕ}:
   measurable (odp_composition 𝒜 n bit ε δ) :=
 begin
-  apply measurable_set_odp_composition 
+  apply measurable_set_odp_composition
     𝒜 bit 0 (λ_, ![]) (λ_, ε) (λ_, δ) (λ ω, ω),
   measurability,
 end
 
-lemma measurable_odp_composition₀ {n : ℕ} : 
+lemma measurable_odp_composition₀ {n : ℕ} :
   measurable (λ (oω : O × (fin n → Ω)), odp_composition₀ 𝒜 oω.1 n bit ε δ oω.2) :=
 begin
   apply measurable_set_odp_composition 𝒜 bit 1
@@ -116,7 +116,7 @@ diff_private_composition (P ^^ n)
   (odp_composition 𝒜 n 1 ε δ) ε δ :=
 begin
   induction n generalizing 𝒜 ε δ,
-  case zero : { 
+  case zero : {
     intros s hs,
     by_cases h : s = set.univ,
     { simp only [h, set.mem_univ, set.set_of_true],
@@ -145,19 +145,19 @@ begin
       (λ ω, odp_composition 𝒜 (n+1) 1 ε δ (vec_cons ω.1 ω.2)) ε δ,
     { have hM : ∀ (x : X), measurable (((𝒜 0).choose ![] ε δ).M x),
       { intro x,
-        apply (𝒜 0).measurable_M measurable_const measurable_const measurable_const measurable_const measurable_id }, 
+        apply (𝒜 0).measurable_M measurable_const measurable_const measurable_const measurable_const measurable_id },
       have h_ind_step : diff_private_composition (P ⊗ P ^^ n)
-        (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 0) ω.1 in 
+        (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 0) ω.1 in
               (o, odp_composition₀ 𝒜 o n 0 ε δ ω.2))
         (λ ω, let o := ((𝒜 0).choose ![] ε δ).M (((𝒜 0).choose ![] ε δ).x 1) ω.1 in
               (o, odp_composition₀ 𝒜 o n 1 ε δ ω.2))
         ε δ,
       { apply induction_step P (P ^^ n)
-          (((𝒜 0).choose ![] ε δ).x 0) 
+          (((𝒜 0).choose ![] ε δ).x 0)
           (((𝒜 0).choose ![] ε δ).x 1)
           ((𝒜 0).choose ![] ε δ).hx (λ x ω, ((𝒜 0).choose ![] ε δ).M x ω)
           ((𝒜 0).choose ![] ε δ).odp_mechanism hM
-          (λ o ω, odp_composition₀ 𝒜 o n 0 ε δ ω) 
+          (λ o ω, odp_composition₀ 𝒜 o n 0 ε δ ω)
           (λ o ω, odp_composition₀ 𝒜 o n 1 ε δ ω),
         exact measurable_odp_composition₀ 𝒜 0 _ _,
         exact measurable_odp_composition₀ 𝒜 1 _ _,

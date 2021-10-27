@@ -28,7 +28,7 @@ begin
   { exact hs (t ∩ s) (by measurability) (by simp) },
   { --have := finite_measure (ν.restrict sᶜ), by apply_instance,
     haveI : finite_measure (ν.restrict sᶜ) := by apply_instance,
-    rw [←measure.restrict_apply ht, ←measure.restrict_apply ht, ←measure.restrict_apply ht, 
+    rw [←measure.restrict_apply ht, ←measure.restrict_apply ht, ←measure.restrict_apply ht,
         measure.restrict_sub_eq_restrict_sub_restrict (show measurable_set sᶜ, by measurability)],
     rw @measure.sub_apply _ _ _ (ν.restrict sᶜ) _ (by apply_instance) ht,
     convert le_refl _,
@@ -52,14 +52,14 @@ begin
   { measurability },
 end
 
-lemma measure.sub_apply_finite {α : Type*} [measurable_space α] (μ ν : measure α) 
-  [finite_measure μ] [finite_measure ν] (s : set α) (hs : measurable_set s) : 
+lemma measure.sub_apply_finite {α : Type*} [measurable_space α] (μ ν : measure α)
+  [finite_measure μ] [finite_measure ν] (s : set α) (hs : measurable_set s) :
   ∃ t, measurable_set t ∧ (μ - ν) s = μ (s ∩ t) - ν (s ∩ t) :=
 begin
   rcases @hahn_decomposition _ _ μ ν _ _ with ⟨t, ht, ht₁, ht₂⟩,
   use t,
   rw ←@measure.restrict_compl_add_restrict _ _ (μ - ν) t,
-  rw [measure.add_apply, measure.restrict_sub_eq_restrict_sub_restrict, 
+  rw [measure.add_apply, measure.restrict_sub_eq_restrict_sub_restrict,
     measure.restrict_sub_eq_restrict_sub_restrict],
   have μ_le_ν : μ.restrict tᶜ ≤ ν.restrict tᶜ,
   { rw measure.le_iff,

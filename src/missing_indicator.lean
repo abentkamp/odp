@@ -3,7 +3,7 @@ import algebra.indicator_function
 set_option old_structure_cmd true
 
 @[protect_proj, ancestor add_cancel_monoid sub_neg_monoid]
-class add_sub_cancel_monoid (M : Type*) 
+class add_sub_cancel_monoid (M : Type*)
   extends add_cancel_monoid M, sub_neg_monoid M  :=
 (add_sub_cancel :  ∀ (a b : M), a + b - b = a)
 

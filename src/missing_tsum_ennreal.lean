@@ -9,7 +9,7 @@ open_locale classical topological_space ennreal nnreal big_operators filter
 namespace finset
 variables {α : Type*}
 
-lemma sum_to_real (s : finset α) (f : α → ℝ≥0∞) (hf : ∀ x, f x ≠ ∞) : 
+lemma sum_to_real (s : finset α) (f : α → ℝ≥0∞) (hf : ∀ x, f x ≠ ∞) :
   (∑ (b : α) in s, f b).to_real = (∑ (b : α) in s, (f b).to_real) :=
 begin
   let r := λ (b : ℝ≥0∞) (c : ℝ), b ≠ ∞ ∧ b.to_real = c,
@@ -25,7 +25,7 @@ end finset
 namespace ennreal
 variables {α : Type*}
 
-lemma has_sum_to_real  (f : α → ℝ≥0∞) (a : ℝ≥0∞) (ha : a ≠ ∞): 
+lemma has_sum_to_real  (f : α → ℝ≥0∞) (a : ℝ≥0∞) (ha : a ≠ ∞):
   has_sum f a → has_sum (λ x, (f x).to_real) a.to_real :=
 begin
   intro h,
@@ -39,7 +39,7 @@ begin
   intros, apply hf
 end
 
-lemma sum_to_real {α : Type*} (f : α → ℝ≥0∞) (hf : ∑' x, f x ≠ ∞) : 
+lemma sum_to_real {α : Type*} (f : α → ℝ≥0∞) (hf : ∑' x, f x ≠ ∞) :
   ∑' x, (f x).to_real = (∑' x, f x).to_real :=
 begin
   have summable_f : summable f := ennreal.summable,

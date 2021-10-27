@@ -3,7 +3,7 @@ import data.matrix.notation
 instance is_empty_fin_zero : is_empty (fin 0) :=
 is_empty.mk (λ x, nat.not_lt_zero x.1 x.2)
 
-instance subsingleton_fun_is_empty (α β : Type*) [is_empty α] : 
+instance subsingleton_fun_is_empty (α β : Type*) [is_empty α] :
   subsingleton (α → β) :=
 begin
   apply subsingleton.intro,
@@ -28,7 +28,7 @@ end
 section
 open matrix
 
-lemma matrix.injective_head_tail {α : Type} (n : ℕ) : 
+lemma matrix.injective_head_tail {α : Type} (n : ℕ) :
   function.injective (λ (x : fin n.succ → α), (vec_head x, vec_tail x)) :=
 λ x y hxy, by rw [←cons_head_tail x, ←cons_head_tail y, (prod.mk.inj hxy).1, (prod.mk.inj hxy).2]
 
@@ -36,10 +36,10 @@ def fin.to_list {α : Type*} : Π {n : ℕ} (a : fin n → α), list α
 | 0 a := []
 | (n + 1) a := vec_head a :: fin.to_list (vec_tail a)
 
-lemma fin.to_list_nil {α : Type*} : 
+lemma fin.to_list_nil {α : Type*} :
   fin.to_list ![] = ([] : list α) := rfl
 
-lemma fin.to_list_cons {α : Type*} {n : ℕ} (a : α) (as : fin n → α) : 
+lemma fin.to_list_cons {α : Type*} {n : ℕ} (a : α) (as : fin n → α) :
   fin.to_list (vec_cons a as) = a :: fin.to_list as :=
 by induction n; simp [fin.to_list]
 
@@ -80,19 +80,19 @@ def vec_butlast {n : ℕ} (v : fin n.succ → α) : fin n → α :=
 fin.init v
 
 @[simp]
-lemma head_butlast {n : ℕ} (v : fin n.succ.succ → α) : 
+lemma head_butlast {n : ℕ} (v : fin n.succ.succ → α) :
   vec_head (vec_butlast v) = vec_head v := rfl
 
 @[simp]
-lemma last_tail {n : ℕ} (v : fin n.succ.succ → α) : 
+lemma last_tail {n : ℕ} (v : fin n.succ.succ → α) :
   vec_last (vec_tail v) = vec_last v := rfl
 
 @[simp]
-lemma butlast_tail {n : ℕ} (v : fin n.succ.succ → α) : 
+lemma butlast_tail {n : ℕ} (v : fin n.succ.succ → α) :
   vec_butlast (vec_tail v) = vec_tail (vec_butlast v) :=
 begin
   ext i,
-  simp [vec_butlast, vec_tail, fin.init, fin.cast_succ, 
+  simp [vec_butlast, vec_tail, fin.init, fin.cast_succ,
     fin.cast_add, fin.cast_le, fin.cast_lt]
 end
 
@@ -114,8 +114,8 @@ by apply fin.init_snoc
 
 def vec_cons.equiv {α : Type*} (n : ℕ) : α × (fin n → α) ≃ (fin n.succ → α) :=
 ⟨λ x, vec_cons x.1 x.2,
- λ x, (vec_head x, vec_tail x), 
- begin intro x, simp end, 
+ λ x, (vec_head x, vec_tail x),
+ begin intro x, simp end,
  begin intro x, simp end⟩
 
 end matrix

@@ -6,7 +6,7 @@ open_locale big_operators
 open_locale topological_space classical
 
 
-lemma tsum_eq_zero {α β : Type*} [add_comm_monoid β] [topological_space β] [t2_space β] : 
+lemma tsum_eq_zero {α β : Type*} [add_comm_monoid β] [topological_space β] [t2_space β] :
   ∀ (f : α → β), (∀ a, f a = 0) → ∑' a, f a = 0 :=
 begin
   intros f hf,
@@ -61,7 +61,7 @@ begin
   exact ⟨a + b, has_sum_of_has_sum_inl_inr ha hb⟩
 end
 
-lemma tsum_inl_add_tsum_inr (hl : summable (f ∘ sum.inl)) (hr : summable (f ∘ sum.inr)) : 
+lemma tsum_inl_add_tsum_inr (hl : summable (f ∘ sum.inl)) (hr : summable (f ∘ sum.inr)) :
   ∑' x, f (sum.inl x) + ∑' x, f (sum.inr x) = ∑' x, f x :=
 (has_sum_of_has_sum_inl_inr hl.has_sum hr.has_sum).tsum_eq.symm
 
@@ -69,9 +69,9 @@ end sum
 
 section option
 variables {α β γ : Type*} {δ : Type*}
-variables [add_comm_monoid α] [topological_space α] [has_continuous_add α] [t2_space α] 
+variables [add_comm_monoid α] [topological_space α] [has_continuous_add α] [t2_space α]
 
-lemma tsum_option (f : option β → α) (hf : summable (λ (x : β), f (some x))) : 
+lemma tsum_option (f : option β → α) (hf : summable (λ (x : β), f (some x))) :
   ∑' (x : option β), f x = ∑' (x : β), f (some x) + f none :=
 begin
   rw ←equiv.tsum_eq (equiv.option_equiv_sum_punit β).symm,

@@ -2,7 +2,7 @@ import data.set.pairwise
 
 namespace set
 
-lemma pairwise_disjoint_on_preimage {ι α β : Type*} (f : α → β) (s : ι → set β) (h : pairwise (disjoint on s)) : 
+lemma pairwise_disjoint_on_preimage {ι α β : Type*} (f : α → β) (s : ι → set β) (h : pairwise (disjoint on s)) :
   pairwise (disjoint on (λ i, f ⁻¹' (s i))) :=
 begin
   intros i j hij a ha,
@@ -12,7 +12,7 @@ begin
   apply ((set.mem_inter_iff _ _ _).1 ha).2,
 end
 
-lemma pairwise_disjoint_on_inter {ι β : Type*} (s : ι → set β) (t : set β) (h : pairwise (disjoint on s)) : 
+lemma pairwise_disjoint_on_inter {ι β : Type*} (s : ι → set β) (t : set β) (h : pairwise (disjoint on s)) :
   pairwise (disjoint on λ i, t ∩ s i) :=
 begin
   intros i j hij a ha,
@@ -21,7 +21,7 @@ begin
   exact mem_of_mem_inter_right ha.2,
 end
 
-lemma pairwise_disjoint_on_prod {ι α β : Type*} (s : ι → set α) (t : set β) (h : pairwise (disjoint on s)) : 
+lemma pairwise_disjoint_on_prod {ι α β : Type*} (s : ι → set α) (t : set β) (h : pairwise (disjoint on s)) :
   pairwise (disjoint on λ i, (s i).prod t) :=
 begin
   intros i j hij a ha,

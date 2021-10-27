@@ -13,7 +13,7 @@ lemma lintegral_compl {s : set α} (hs : measurable_set s) (f : α → ℝ≥0�
 by rw [←lintegral_union hs (by measurability) disjoint_compl_right,
   set.union_compl_self, restrict_univ]
 
-lemma set_lintegral_nonzero {s : set α} (hs : measurable_set s) (f : α → ℝ≥0∞) 
+lemma set_lintegral_nonzero {s : set α} (hs : measurable_set s) (f : α → ℝ≥0∞)
   (h : ∀ x ∉ s, f x = 0) :
   ∫⁻ a, f a ∂μ = ∫⁻ a in s, f a ∂μ :=
 begin
@@ -27,7 +27,7 @@ begin
   measurability
 end
 
-lemma set_lintegral_fun_congr {s : set α} (hs : measurable_set s) (f g : α → ℝ≥0∞) 
+lemma set_lintegral_fun_congr {s : set α} (hs : measurable_set s) (f g : α → ℝ≥0∞)
   (h : ∀ a ∈ s, f a = g a):
   ∫⁻ a in s, f a ∂μ = ∫⁻ a in s, g a ∂μ :=
 begin

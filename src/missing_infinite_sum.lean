@@ -1,13 +1,13 @@
 import topology.algebra.infinite_sum
 import .missing_indicator
 
-section 
+section
 
 universe variables u
 variables {α β γ : Type u}
 variables [add_comm_monoid α] [topological_space α] [t2_space α]
 
-lemma tsum_singleton (b : β) (f : β → α) (hf : summable f) : 
+lemma tsum_singleton (b : β) (f : β → α) (hf : summable f) :
   ∑' (x : ({b} : set β)), f x = f b :=
 begin
   rw tsum_eq_single,
@@ -32,7 +32,7 @@ begin
   simp_rw [set.mem_compl_iff,
    set.mem_range,
    set.mem_singleton_iff,
-   @eq_comm _ (some _) x, 
+   @eq_comm _ (some _) x,
    ←option.is_some_iff_exists],
   exact option.ne_none_iff_is_some
 end
@@ -62,7 +62,7 @@ variables [add_comm_sub_cancel_monoid α] [topological_space α] [t2_space α]
 --   -- simpa only [add_sub_cancel_monoid.add_sub_cancel] using h.sub hf
 -- end
 
--- lemma tsum_option (f : option β → α) (hf : summable f) : 
+-- lemma tsum_option (f : option β → α) (hf : summable f) :
 --   ∑' (x : option β), f x = ∑' (x : β), f (some x) + f none :=
 -- begin
 --   have h_summable_none : summable ((λ (x : option β), f x) ∘ (coe : ({none} : set (option β)) → option β)),
