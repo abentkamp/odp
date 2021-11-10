@@ -47,61 +47,41 @@ def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
-/-- Output differential privacy on a given set `s` of outputs -/
-def output_diff_private (s : set O) :=
-  ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y →
-  P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t} + δ
+/- Output differential privacy on a given set `s` of outputs -/
+-- TODO: Remove
+-- def output_diff_private (s : set O) :=
+--   ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y →
+--   P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t} + δ
 
-/-- An ODP mechanism is an `ε`-`δ`-differentially private mechanism such that
-there is a partition of the set of outputs `O` into measurable subsets indexed
-by `i` where `M` is `ε_for i`-output differentially private for each `i`.
+/-- An ODP mechanism is a mechanism such that there is a partition of the set of
+outputs `O` into measurable subsets such that the `odp` inequality below is
+fulfilled.
 
 The partition is realized by a function `partition` that assigns to every
-possible output an index `some i` or `none` if there is no associated
-`ε_for i`-value for that output. -/
+possible output an index `i`. -/
 structure odp_mechanism :=
-(ε δ : ℝ≥0∞)
-(ε_lt_infty : ε < ∞)
-(dp : diff_private P M ε δ)
+(δ : ℝ≥0∞)
 (index : Type)
 [encodable : encodable index]
-(partition : O → option index)
+(partition : O → index)
 (measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
-(ε_for : option index → ℝ≥0∞)
+(ε_for : index → ℝ≥0∞)
 (ε_for_lt_infty : ∀ i, ε_for i < ∞)
-(δ_for : index → ℝ≥0∞)
-(odp : ∀ (i : index), output_diff_private P M (ε_for i) (δ_for i) {o : O | partition o = i})
+(odp : ∀ (x y : X) (s : set O), P {ω : Ω | M x ω ∈ s} 
+  ≤ δ + ∑' i : index, exp (ε_for i) * P {ω : Ω | M y ω ∈ s ∩ {o : O | partition o = i}})
 
 -- TODO: Example instance
 
 variables {P} {M}
 
-/-- The ε usage for a partition `i` of an ODP mechanism `M` is normally given by
-`p.ε_for i`, but for `none` the mechanism uses `p.ε`. -/
-def εusage_for (p : odp_mechanism P M) : option p.index → ℝ≥0∞
-| none := p.ε
-| (some i) :=  p.ε_for i
-
-lemma εusage_for_lt_infty (p : odp_mechanism P M) (i : option p.index) :
-  εusage_for p i < ∞ :=
-begin
-  cases i,
-  apply p.ε_lt_infty,
-  apply p.ε_for_lt_infty,
-end
-
-/-- To determine the ε-usage for a certain output, we look up its partition and
-refer to `εusage_for`. -/
-def εusage (p : odp_mechanism P M) (o : O) := εusage_for p (p.partition o)
-
-/-- To determine the δ-usage for a certain output, we sum up all δ values. -/
-def δusage (p : odp_mechanism P M) := p.δ + ∑' i : p.index, p.δ_for i
+/-- The ε-usage for a certain output id the ε associated with its partition. -/
+def εusage (p : odp_mechanism P M) (o : O) := p.ε_for (p.partition o)
 
 /-- The set of outputs associated with an index `i` -/
-def odp_set_for (p : odp_mechanism P M) : option p.index → set O :=
+def odp_set_for (p : odp_mechanism P M) : p.index → set O :=
 λ i, {o : O | p.partition o = i}
 
-lemma partition_eq_of_mem_odp_set_for {p : odp_mechanism P M} {i : option p.index}
+lemma partition_eq_of_mem_odp_set_for {p : odp_mechanism P M} {i : p.index}
   {o : O} (ho: o ∈ odp_set_for p i) :
   p.partition o = i := ho
 
@@ -115,9 +95,9 @@ begin
   contradiction,
 end
 
-lemma εusage_eq_εusage_for {p : odp_mechanism P M} {i : option p.index}
+lemma εusage_eq_ε_for {p : odp_mechanism P M} {i : p.index}
   {o : O} (ho : o ∈ odp_set_for p i) :
-  εusage p o = εusage_for p i :=
+  εusage p o = p.ε_for i :=
 begin
   rw ← partition_eq_of_mem_odp_set_for ho,
   refl,
@@ -128,14 +108,13 @@ lemma mem_odp_set_for_odp_index (p : odp_mechanism P M) (o : O) :
 by simp [odp_set_for]
 
 @[measurability]
-lemma measurable_set_odp_set_for (p : odp_mechanism P M) (i : option p.index) :
+lemma measurable_set_odp_set_for (p : odp_mechanism P M) (i : p.index) :
   measurable_set (odp_set_for p i) :=
 p.measurable_partition i
 
-/-- Since the type of indices is finite, we can assume that all its subsets are
-measurable. -/
+/-- Since the type of indices is countable, we can assume that all its subsets
+are measurable. -/
 instance (p : odp_mechanism P M) : measurable_space p.index := ⊤
-instance (p : odp_mechanism P M) : measurable_space (option p.index) := ⊤
 
 @[measurability]
 lemma measurable_partition (p : odp_mechanism P M) :
@@ -148,7 +127,8 @@ begin
   measurability
 end
 
-lemma union_odp_set_for_eq_univ (p : odp_mechanism P M) : (⋃ i, odp_set_for p i) = set.univ :=
+lemma union_odp_set_for_eq_univ (p : odp_mechanism P M) : 
+  (⋃ i, odp_set_for p i) = set.univ :=
 begin
   apply set.eq_univ_of_forall,
   intros o,
@@ -158,8 +138,11 @@ begin
 end
 
 lemma split_set (p : odp_mechanism P M) (s : set (O × O')) :
-  s = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ :=
+  s = ⋃ (i : p.index), s ∩ (odp_set_for p i).prod set.univ :=
 calc s = s ∩ (set.prod set.univ set.univ) : by simp
-... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) : by rw ←union_odp_set_for_eq_univ _
-... = s ∩ (⋃ (i : option p.index), (odp_set_for p i).prod set.univ) : by rw set.Union_prod_const
-... = ⋃ (i : option p.index), s ∩ (odp_set_for p i).prod set.univ : by rw set.inter_Union
+... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) :
+  by rw ←union_odp_set_for_eq_univ _
+... = s ∩ (⋃ (i : p.index), (odp_set_for p i).prod set.univ) : 
+  by rw set.Union_prod_const
+... = ⋃ (i : p.index), s ∩ (odp_set_for p i).prod set.univ : 
+  by rw set.inter_Union

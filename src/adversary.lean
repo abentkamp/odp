@@ -23,8 +23,7 @@ remaining ε-δ-budget. -/
 structure adversary_choice (ε δ : ℝ≥0∞) :=
 (M : X → Ω → O)
 (odp_mechanism : odp_mechanism P M)
-(hε : odp_mechanism.ε ≤ ε)
-(hδ : δusage odp_mechanism ≤ δ)
+(hδ : odp_mechanism.δ ≤ δ)
 (hε_for : ∀ i, odp_mechanism.ε_for i ≤ ε)
 (x : fin 2 → X)
 (hx : neighboring (x 0) (x 1))
@@ -47,22 +46,10 @@ structure adversary_n (n : ℕ) :=
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
   measurable os → measurable o → measurable ε →  measurable δ →
   measurable (λ (a : α), εusage (choose (os a) (ε a) (δ a)).odp_mechanism (o a)))
-(measurable_δ :
-  ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
-  measurable os → measurable ε →  measurable δ →
-  measurable (λ (a : α), δusage (choose (os a) (ε a) (δ a)).odp_mechanism))
 
-/-- An adversary is a collection of `adversary_n` structures for each number of iterations `n`. -/
+/-- An adversary is a collection of `adversary_n` structures for each number of
+iterations `n`. -/
 def adversary := Π (n : ℕ), adversary_n P O X n
-
-/-- An `adversary_choice` is constructed so that it can never violate the ε-budget. -/
-lemma εusage_for_le_ε {ε δ : ℝ≥0∞} (𝒜_choice : adversary_choice P O X ε δ) (i : option 𝒜_choice.odp_mechanism.index) :
-  εusage_for 𝒜_choice.odp_mechanism i ≤ ε :=
-begin
-  cases i,
-  apply 𝒜_choice.hε,
-  apply 𝒜_choice.hε_for
-end
 
 variables {P} {O} {X} (𝒜 : adversary P O X)
 
@@ -83,11 +70,6 @@ end,
 begin
   intros,
   apply 𝒜.measurable_ε (measurable.fin_cons _ _),
-  measurability
-end,
-begin
-  intros,
-  apply 𝒜.measurable_δ (measurable.fin_cons _ _),
   measurability
 end⟩
 
@@ -143,7 +125,7 @@ noncomputable def odp_composition : Π (𝒜 : adversary P O X) (n : ℕ) (bit :
   -- We calculate the remaining ε-budget.
   let ε' := ε - εusage 𝒜_choice.odp_mechanism o in
   -- We calculate the remaining δ-budget.
-  let δ' := δ - δusage 𝒜_choice.odp_mechanism in
+  let δ' := δ - 𝒜_choice.odp_mechanism.δ in
   -- We inform the adversary about the new output.
   let 𝒜' := inform 𝒜 o in
   -- We return the output and enter the next iteration for the remaining outputs.

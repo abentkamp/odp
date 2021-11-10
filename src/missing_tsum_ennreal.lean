@@ -48,4 +48,19 @@ begin
   rw has_sum.tsum_eq (has_sum_to_real f b hf hb)
 end
 
+lemma tsum_all_but_one_zero {ι : Type*} [decidable_eq ι](i : ι) (f : ι → ennreal)
+  (hf : ∀ j, j ≠ i → f j = 0) : 
+  ∑' j, f j = f i :=
+calc
+  (∑' j, f j) =  (∑' j, dite (j = i) (λ h, f i) (λ h, 0)) :
+  begin
+    congr',
+    funext,
+    conv {
+      to_rhs, congr, funext, rw ←h, skip, 
+      funext, rw ← hf _ h, },
+    simp
+  end
+  ... = f i : by simp
+
 end ennreal

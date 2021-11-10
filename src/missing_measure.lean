@@ -205,6 +205,14 @@ lemma measure_theory.finite_measure.smul {α : Type*} [measurable_space α] (μ 
   apply measure_lt_top,
 end⟩
 
+lemma measure_theory.finite_measure.restrict {α : Type*} [measurable_space α] (μ : measure α) [finite_measure μ]
+  {s : set α} : finite_measure (μ.restrict s) :=
+⟨begin
+  rw measure.restrict_apply,
+  measurability,
+  apply measure_lt_top,
+end⟩
+
 instance pi.probability_measure {α : Type*} [measurable_space α] (P : measure α) (n : ℕ) [probability_measure P] :
   probability_measure (P ^^ n) :=
 ⟨begin
@@ -212,3 +220,11 @@ instance pi.probability_measure {α : Type*} [measurable_space α] (P : measure 
   simp [probability_measure.measure_univ],
   measurability,
 end⟩
+
+lemma measure.restrict_apply_disjoint
+  {α : Type*} [measurable_space α] (μ : measure α) (t s : set α)
+  (hst : disjoint t s)
+  (ht : measurable_set t) : μ.restrict s t = 0 :=
+by rw [measure.restrict_apply_eq_zero ht,
+      ← @measure_empty _ _ μ,
+      ← set.disjoint_iff_inter_eq_empty.1 hst]
