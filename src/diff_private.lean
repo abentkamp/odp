@@ -47,12 +47,6 @@ def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
-/- Output differential privacy on a given set `s` of outputs -/
--- TODO: Remove
--- def output_diff_private (s : set O) :=
---   ∀ (x y : X) (t : set O) (hs : t ⊆ s), measurable_set t → neighboring x y →
---   P {ω : Ω | M x ω ∈ t} ≤ exp ε * P {ω : Ω | M y ω ∈ t} + δ
-
 /-- An ODP mechanism is a mechanism such that there is a partition of the set of
 outputs `O` into measurable subsets such that the `odp` inequality below is
 fulfilled.

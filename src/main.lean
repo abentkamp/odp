@@ -26,8 +26,6 @@ variables {X : Type} [database_type X] [measurable_space X]
 
   We use `P` as the probablity measure on the same space `Ω` of the `n` mechanisms,
   and thus the product measure `P ^^ n` is the probability measure on the joint sample space.
-
-  -- TODO: make ε a nnreal
 -/
 theorem main (𝒜 : adversary P O X) (ε δ : ℝ≥0∞) (hε : ε < ∞) (n : ℕ) :
   let v bit := odp_composition 𝒜 n bit ε δ in
