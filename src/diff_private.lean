@@ -1,5 +1,5 @@
 import measure_theory.constructions.prod
-import .missing_ennreal
+import .missing_ennreal .missing_matrix .missing_measure
 
 /-
 This file defines differential privacy and output differential privacy.
@@ -146,3 +146,22 @@ calc s = s ∩ (set.prod set.univ set.univ) : by simp
   by rw set.Union_prod_const
 ... = ⋃ (i : p.index), s ∩ (odp_set_for p i).prod set.univ : 
   by rw set.inter_Union
+
+open matrix
+
+lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω]
+  (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) :
+  let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
+  diff_private_composition P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_composition P M₀ M₁ ε δ :=
+begin
+  intros f h s hs,
+  rw [←set.preimage_image_eq s (injective_head_tail n)],
+  refine h (f '' s) _,
+  have : measurable_set ((λ x : _ × _, vec_cons x.1 x.2) ⁻¹' s),
+  { apply measurable.fin_cons,
+    apply measurable_fst,
+    apply measurable_snd,
+    exact hs },
+  convert this,
+  exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
+end

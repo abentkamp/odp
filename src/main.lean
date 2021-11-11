@@ -13,108 +13,17 @@ local infix ` ⊗ `:50  := measure.prod
 
 variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P] (O : Type) [measurable_space O]
 variables (X : Type) [database_type X] [measurable_space X]
-variables {P} {O} {X} (𝒜 : adversary P O X)
-variables (bit : fin 2) (acc acc₁ acc₂ : list O) (o : O) (ε δ : ℝ≥0∞) (hε : ε < ∞) (ω : Ω) (ωs : list Ω)
+variables {P} {O} {X}
 
-/-- This auxiliary definition is a fragment of the `odp_composition` algortithm,
-but assumes that the current output `o` has already been sampled. -/
-noncomputable def odp_composition₀ (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=
-  let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ in
-  let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o in
-  let δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_mechanism.δ in
-  let 𝒜' := inform 𝒜 o in
-  odp_composition 𝒜' n bit ε' δ' ω
-
-lemma diff_private_composition_map_vec_head_vec_tail {Ω : Type} [measurable_space Ω]
-  (P : measure Ω) {n : ℕ} (M₀ M₁ : Ω → fin n.succ → O) :
-  let f := (λ o : fin n.succ → O, (vec_head o, vec_tail o)) in
-  diff_private_composition P (λ ω, f (M₀ ω)) (λ ω, f (M₁ ω)) ε δ → diff_private_composition P M₀ M₁ ε δ :=
-begin
-  intros f h s hs,
-  rw [←set.preimage_image_eq s (injective_head_tail n)],
-  refine h (f '' s) _,
-  have : measurable_set ((λ x : _ × _, vec_cons x.1 x.2) ⁻¹' s),
-  { apply measurable.fin_cons,
-    apply measurable_fst,
-    apply measurable_snd,
-    exact hs },
-  convert this,
-  exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
-end
-
-/-- The algorithm `odp_composition` is measurable.
-
-Note: I haven't been able to prove this using an adversary that gets fed a list instead of a vector
-because lists are currently not instantiated as a measurable space.
--/
-lemma measurable_set_odp_composition {n : ℕ} {α : Type} [measurable_space α]
-  (m : ℕ) (os : α → (fin m → O)) (ε δ : α → ℝ≥0∞) (ω : α → (fin n → Ω))
-  (hos : measurable os) (hε : measurable ε) (hδ : measurable δ) (hω : measurable ω) :
-  measurable (λ a : α, odp_composition (inform_vec 𝒜 m (os a)) n bit (ε a) (δ a) (ω a)) :=
-begin
-  induction n with n ih generalizing m ε δ os,
-  case zero { show measurable (λ ω, ![]), by apply measurable_const },
-  case succ { show measurable (λ a, odp_composition (inform_vec 𝒜 m (os a)) (n+1) bit (ε a) (δ a) (ω a)),
-    suffices : measurable (λ a, odp_composition (inform_vec 𝒜 m (os a)) (n+1) bit (ε a) (δ a) (vec_cons (vec_head (ω a)) (vec_tail (ω a)))),
-      by simpa only [cons_head_tail] using this,
-    unfold odp_composition,
-    apply measurable.fin_cons,
-    { simp_rw [cons_head_tail, inform_vec_choose 𝒜],
-      apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
-      apply (𝒜 m).measurable_x bit hos hε hδ, },
-    { simp_rw [inform_inform_vec, matrix.cons_head_tail, inform_vec_choose 𝒜],
-      apply ih (λ a, vec_tail (ω a)) _ (m+1),
-      apply measurable.vec_snoc,
-      exact hos,
-      apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
-      apply (𝒜 m).measurable_x bit hos hε hδ,
-      { apply measurable.sub hε, --TODO: why can't I rewrite inform_vec_choose here?
-        suffices : measurable (λ (a : α),
-          εusage (( 𝒜 m ).choose (os a) (ε a) (δ a)).odp_mechanism
-            (((𝒜 m).choose (os a) (ε a) (δ a)).M (((𝒜 m).choose (os a) (ε a) (δ a)).x bit) (vec_head (ω a)))),
-        { convert this, apply funext, intro i,
-          rw inform_vec_choose 𝒜 (os i) },
-        refine (𝒜 m).measurable_ε hos _ hε hδ,
-        apply (𝒜 m).measurable_M hos hε hδ _ (measurable.comp measurable.vec_head hω),
-        apply (𝒜 m).measurable_x bit hos hε hδ, },
-      { apply measurable.sub hδ,
-        suffices : measurable (λ (a : α),
-          ((𝒜 m).choose (os a) (ε a) (δ a)).odp_mechanism.δ),
-        { convert this, apply funext, intro i,
-          rw inform_vec_choose 𝒜 (os i) },
-        exact (𝒜 m).measurable_δ hos hε hδ },
-      exact measurable.comp measurable.vec_tail hω } }
-end
-
-/-- The algorithm `odp_composition` is measurable. This is a special case of `measurable_set_odp_composition` above. -/
-lemma measurable_set_odp_composition' {n : ℕ}:
-  measurable (odp_composition 𝒜 n bit ε δ) :=
-begin
-  apply measurable_set_odp_composition
-    𝒜 bit 0 (λ_, ![]) (λ_, ε) (λ_, δ) (λ ω, ω),
-  measurability,
-end
-
-lemma measurable_odp_composition₀ {n : ℕ} :
-  measurable (λ (oω : O × (fin n → Ω)), odp_composition₀ 𝒜 oω.1 n bit ε δ oω.2) :=
-begin
-  apply measurable_set_odp_composition 𝒜 bit 1
-    (λ oω : O × (fin n → Ω), ![oω.1])
-    (λ oω : O × (fin n → Ω), ε - εusage ((𝒜 0).choose vec_empty ε δ).odp_mechanism oω.fst)
-    (λ oω : O × (fin n → Ω), δ - ((𝒜 0).choose vec_empty ε δ).odp_mechanism.δ)
-    (λ oω : O × (fin n → Ω), oω.2),
-  apply measurable.vec_cons,
-  measurability
-end
-
-include hε
 /-- This is the main theorem. The algorithm `odp_composition` with bit `0` vs
 bit `1` is a differentially private composition.-/
-theorem main (n : ℕ) :
-diff_private_composition (P ^^ n)
-  (odp_composition 𝒜 n 0 ε δ)
-  (odp_composition 𝒜 n 1 ε δ) ε δ :=
+theorem main (𝒜 : adversary P O X) (ε δ : ℝ≥0∞) (hε : ε < ∞) (n : ℕ) :
+∀ (s : set (fin n → O)) (hs : measurable_set s),
+  (P ^^ n) {ω | odp_composition 𝒜 n 0 ε δ ω ∈ s} ≤ exp ε * (P ^^ n) {ω | (odp_composition 𝒜 n 1 ε δ) ω ∈ s} + δ :=
 begin
+  show diff_private_composition (P ^^ n)
+    (odp_composition 𝒜 n 0 ε δ)
+    (odp_composition 𝒜 n 1 ε δ) ε δ,
   induction n generalizing 𝒜 ε δ,
   case zero : {
     intros s hs,
