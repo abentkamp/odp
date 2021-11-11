@@ -172,25 +172,6 @@ begin
 end
 end
 
--- lemma pos_hahn_slice_eq_pos_hahn (i : p.index) : 
---   pos_hahn_slice P₁ x₀ x₁ M₁ (p.ε_for i) (odp_set_for p i) 
---     = pos_hahn P₁ x₀ x₁ M₁ p (odp_set_for p i) :=
--- begin
---   haveI := p.encodable,
---   haveI := encodable.decidable_eq_of_encodable p.index,
---   unfold pos_hahn,
---   rw measure.sum_apply,
---   rw tsum_all_but_one_zero,
---   rw measure.restrict_apply_self,
---   apply measurable_set_odp_set_for,
---   { intros j hj, 
---     rw measure.restrict_apply_disjoint,
---     apply pairwise_disjoint_on_odp_set_for,
---     intro h, rw h at hj, exact hj rfl,
---     apply measurable_set_odp_set_for },
---   apply measurable_set_odp_set_for,
--- end
-
 section
 include hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
 /-- First, we prove an inequality on a single set `odp_set_for p i` of the ODP partition. -/
@@ -265,7 +246,6 @@ end
 begin
   refine add_le_add _ (le_refl _),
   refine measure_theory.lintegral_mono' _ (le_refl _),
-  -- refine measure.restrict_mono (λ x hx, hx) _,
   apply @pos_hahn_slice_prop _ _ P₁ _ _ _ _ _ x₀ x₁  M₁ p hM₁ _
 end
  ... ≤ ∫⁻ (o₁ : O₁) in odp_set_for p i,
@@ -312,44 +292,13 @@ begin
 end
 end
 
--- section
--- include hx hM₁
--- lemma pos_hahn_slice_apply (i : p.index) (s : set O₁) (hs : measurable_set s) :
---   ∃ t,
---   pos_hahn_slice P₁ x₀ x₁ M₁ (p.ε_for i) s
---     = ((measure.map (λ (ω : Ω₁), M₁ x₀ ω)) P₁) (s ∩ t) 
---     - (p.ε_for i).exp • measure.map (λ (ω : Ω₁), M₁ x₁ ω) P₁ (s ∩ t) :=
--- begin
---   rw [pos_hahn_slice],
---   haveI : ∀ x, finite_measure ((measure.map (λ (ω : Ω₁), M₁ x ω)) P₁) :=
---     λ x, measure_theory.finite_measure.map _ (hM₁ _),
---   haveI : finite_measure ((p.ε_for i).exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) :=
---   begin
---     apply measure_theory.finite_measure.smul,
---     apply ennreal.exp_lt_top_of_lt_top,
---     apply p.ε_for_lt_infty,
---   end,
---   rcases @measure.sub_apply_finite _ _
---     (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁)
---     ((p.ε_for i).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) _ _ _ _
---     with ⟨t, ht₁, ht₂⟩,
---   use t,
---   rw ht₂,
---   refl,
---   -- apply ennreal.sub_le_iff_le_add.2,
---   -- rw [add_comm, measure.map_apply, measure.smul_apply,
---   --   measure.map_apply],
---   -- { sorry },
---   -- -- { apply set.inter_subset_left },
---   measurability
--- end
--- end
--- #check pos_hahn_slice_apply
 section
 include hx hM₁
 lemma pos_hahn_prop (hε : ε < ∞) (h_ε_for : ∀ i, p.ε_for i ≤ ε) :
   pos_hahn P₁ x₀ x₁ M₁ p univ ≤ p.δ :=
 begin
+  /- This proof is a bit complicated because we have the hahn decomposition theorem only for finite measures
+  and we need to prove the involved measures to be finite. -/
   have := p.odp,
   unfold pos_hahn,
   haveI : finite_measure (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁) :=
