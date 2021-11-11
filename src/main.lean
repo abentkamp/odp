@@ -1,6 +1,6 @@
 import .induction_step data.set.basic .adversary
 
-/- This file contains the main theorem (Theorem 5). -/
+/- This file contains the main theorem. -/
 
 open measure_theory ennreal database_type matrix
 open_locale ennreal
@@ -11,15 +11,28 @@ local infix ` ^^ `:60 := λ (μ : measure_theory.measure _) (n : ℕ),
 
 local infix ` ⊗ `:50  := measure.prod
 
-variables {Ω : Type} [measurable_space Ω] (P : measure Ω) [probability_measure P] (O : Type) [measurable_space O]
-variables (X : Type) [database_type X] [measurable_space X]
-variables {P} {O} {X}
+/- `Ω` is a sample space with a probability measure `P` on it. -/
+variables {Ω : Type} [measurable_space Ω] {P : measure Ω} [probability_measure P]
 
-/-- This is the main theorem. The algorithm `odp_composition` with bit `0` vs
-bit `1` is a differentially private composition.-/
+/- `O` is the type of outputs of mechanisms. -/
+variables {O : Type} [measurable_space O]
+
+/- `X` is the type of databases. -/
+variables {X : Type} [database_type X] [measurable_space X]
+
+/-- Main Theorem: 
+  For every adversary `𝒜` and for every set of views `s` of `𝒜` returned by `odp_composition`,
+  we have that `Pr(v⁰ ∈ s) ≤ exp ε * Pr(v¹ ∈ s) + δ`.
+
+  We use `P` as the probablity measure on the same space `Ω` of the `n` mechanisms,
+  and thus the product measure `P ^^ n` is the probability measure on the joint sample space.
+
+  -- TODO: make ε a nnreal
+-/
 theorem main (𝒜 : adversary P O X) (ε δ : ℝ≥0∞) (hε : ε < ∞) (n : ℕ) :
-∀ (s : set (fin n → O)) (hs : measurable_set s),
-  (P ^^ n) {ω | odp_composition 𝒜 n 0 ε δ ω ∈ s} ≤ exp ε * (P ^^ n) {ω | (odp_composition 𝒜 n 1 ε δ) ω ∈ s} + δ :=
+  let v bit := odp_composition 𝒜 n bit ε δ in
+  ∀ (s : set (fin n → O)) (hs : measurable_set s),
+    (P ^^ n) {ω | v 0 ω ∈ s} ≤ exp ε * (P ^^ n) {ω | v 1 ω ∈ s} + δ :=
 begin
   show diff_private_composition (P ^^ n)
     (odp_composition 𝒜 n 0 ε δ)
