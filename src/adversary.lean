@@ -46,6 +46,10 @@ structure adversary_n (n : ℕ) :=
   ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
   measurable os → measurable o → measurable ε →  measurable δ →
   measurable (λ (a : α), εusage (choose (os a) (ε a) (δ a)).odp_mechanism (o a)))
+(measurable_δ :
+  ∀ {α : Type} [measurable_space α] {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
+  measurable os → measurable ε → measurable δ →
+  measurable (λ (a : α), (choose (os a) (ε a) (δ a)).odp_mechanism.δ))
 
 /-- An adversary is a collection of `adversary_n` structures for each number of
 iterations `n`. -/
@@ -70,6 +74,11 @@ end,
 begin
   intros,
   apply 𝒜.measurable_ε (measurable.fin_cons _ _),
+  measurability
+end,
+begin
+  intros,
+  apply 𝒜.measurable_δ (measurable.fin_cons _ _),
   measurability
 end⟩
 

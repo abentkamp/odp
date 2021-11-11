@@ -21,7 +21,7 @@ but assumes that the current output `o` has already been sampled. -/
 noncomputable def odp_composition₀ (n : ℕ) (bit : fin 2) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=
   let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ in
   let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o in
-  let δ' : ℝ≥0∞ := δ - δusage 𝒜_choice.odp_mechanism in
+  let δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_mechanism.δ in
   let 𝒜' := inform 𝒜 o in
   odp_composition 𝒜' n bit ε' δ' ω
 
@@ -79,7 +79,7 @@ begin
         apply (𝒜 m).measurable_x bit hos hε hδ, },
       { apply measurable.sub hδ,
         suffices : measurable (λ (a : α),
-          δusage ((𝒜 m).choose (os a) (ε a) (δ a)).odp_mechanism),
+          ((𝒜 m).choose (os a) (ε a) (δ a)).odp_mechanism.δ),
         { convert this, apply funext, intro i,
           rw inform_vec_choose 𝒜 (os i) },
         exact (𝒜 m).measurable_δ hos hε hδ },
@@ -101,7 +101,7 @@ begin
   apply measurable_set_odp_composition 𝒜 bit 1
     (λ oω : O × (fin n → Ω), ![oω.1])
     (λ oω : O × (fin n → Ω), ε - εusage ((𝒜 0).choose vec_empty ε δ).odp_mechanism oω.fst)
-    (λ oω : O × (fin n → Ω), δ - δusage ((𝒜 0).choose vec_empty ε δ).odp_mechanism)
+    (λ oω : O × (fin n → Ω), δ - ((𝒜 0).choose vec_empty ε δ).odp_mechanism.δ)
     (λ oω : O × (fin n → Ω), oω.2),
   apply measurable.vec_cons,
   measurability
@@ -132,11 +132,11 @@ begin
         (λ ω, odp_composition₀ 𝒜 o₁ n 0 ε δ ω)
         (λ ω, odp_composition₀ 𝒜 o₁ n 1 ε δ ω)
         (ε - εusage ((𝒜 0).choose ![] ε δ).odp_mechanism o₁)
-        (δ - δusage ((𝒜 0).choose ![] ε δ).odp_mechanism),
+        (δ - ((𝒜 0).choose ![] ε δ).odp_mechanism.δ),
       { intro o,
         let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ![] ε δ,
         let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o,
-        let  δ' : ℝ≥0∞ := δ - δusage 𝒜_choice.odp_mechanism,
+        let  δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_mechanism.δ,
         let  𝒜' : adversary P O X := inform 𝒜 o,
         have hε' : ε' < ∞ := lt_of_le_of_lt (ennreal.sub_le_self _ _) hε,
         exact ih 𝒜' ε' δ' hε' },
@@ -162,8 +162,8 @@ begin
         exact measurable_odp_composition₀ 𝒜 0 _ _,
         exact measurable_odp_composition₀ 𝒜 1 _ _,
         exact hε,
+        exact ((𝒜 0).choose ![] ε δ).hε_for,
         exact ((𝒜 0).choose ![] ε δ).hδ,
-        exact (λ i, εusage_for_le_ε _ _ _ _ _),
         exact ih' },
       dunfold odp_composition,
       apply diff_private_composition_map_vec_head_vec_tail,

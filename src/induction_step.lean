@@ -347,60 +347,84 @@ end
 -- #check pos_hahn_slice_apply
 section
 include hx hM₁
-lemma pos_hahn_prop:
+lemma pos_hahn_prop (hε : ε < ∞) (h_ε_for : ∀ i, p.ε_for i ≤ ε) :
   pos_hahn P₁ x₀ x₁ M₁ p univ ≤ p.δ :=
 begin
   have := p.odp,
   unfold pos_hahn,
-  haveI := finite_measure
+  haveI : finite_measure (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁) :=
+  begin
+    apply finite_measure.map,
+    measurability
+  end,
+  haveI : finite_measure (measure.map (λ (ω : Ω₁), M₁ x₁ ω) P₁) :=
+  begin
+    apply finite_measure.map,
+    measurability
+  end,
+  haveI : finite_measure (ε.exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁) :=
+  begin
+    apply finite_measure.smul,
+    apply exp_lt_top_of_lt_top,
+    apply hε,
+  end,
+  haveI : finite_measure
     (measure.sum
        (λ (i : p.index),
           ((p.ε_for i).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁).restrict (odp_set_for p i))) :=
   begin
-    -- TODO use instance instead of lemma?
+    apply finite_measure_of_le (ε.exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁),
+    apply measure.le_iff.2,
+    intros s hs,
+    rw measure.sum_apply _ hs,
+    calc ∑' (i : p.index), ((p.ε_for i).exp • 
+           (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁).restrict (odp_set_for p i) s
+        = ∑' (i : p.index), (p.ε_for i).exp *
+            (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁ (s ∩ odp_set_for p i) :
+          by {congr, funext, rw measure.restrict_apply, rw measure.smul_apply, exact hs }
+    ... ≤ ∑' (i : p.index), ε.exp *
+            (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁ (s ∩ odp_set_for p i) :
+          begin
+            refine tsum_le_tsum _ ennreal.summable ennreal.summable,
+            intro i,
+            apply ennreal.mul_le_mul _ (le_refl _),
+            apply ennreal.exp_le_exp _ _ (h_ε_for i)
+          end
+    ... = ε.exp * measure.map (λ (ω : Ω₁), M₁ x₁ ω) P₁ (⋃ (i : p.index), s ∩ odp_set_for p i) :
+          begin
+            rw ennreal.tsum_mul_left,
+            rw ← measure_Union _,
+            { measurability },
+            { exact p.encodable },
+            apply pairwise_disjoint_on_inter,
+            apply pairwise_disjoint_on_odp_set_for
+          end
+    ... = ε.exp • (measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁ s :
+          begin
+            rw ←set.inter_Union,
+            rw union_odp_set_for_eq_univ,
+            rw inter_univ,
+            refl
+          end
   end,
-  have := @measure.sub_apply_finite _ _ 
+  rcases @measure.sub_apply_finite _ _ 
     ((measure.map (λ (ω : Ω₁), M₁ x₀ ω)) P₁)
     (measure.sum
       (λ (i : p.index),
-      ((p.ε_for i).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁).restrict (odp_set_for p i))) _ _ _ _,
-  have : P₁ {ω : Ω₁ | M₁ x₀ ω ∈ univ} 
-    = ∑' i, P₁ {ω : Ω₁ | M₁ x₀ ω ∈ odp_set_for p i},
-  begin
-    rw [← measure_Union _],
-    congr',
-    convert set.preimage_Union,
-    rw union_odp_set_for_eq_univ p,
-    refl,
-    { measurability },
-    exact p.encodable,
-    apply pairwise_disjoint_on_preimage,
-    apply pairwise_disjoint_on_odp_set_for
-  end,
-  have : ∑' (i : p.index), (P₁ {ω : Ω₁ | M₁ x₀ ω ∈ odp_set_for p i} -
-      (p.ε_for i).exp * P₁ {ω : Ω₁ | M₁ x₁ ω ∈ {o : O₁ | p.partition o = i}}) ≤
-  p.δ,
-  begin
-    have := ennreal.sub_le_iff_le_add.2 (p.odp x₀ x₁ univ),
-    rw ennreal.tsum_sub,
-  end
-  unfold pos_hahn,
+      ((p.ε_for i).exp • ⇑(measure.map (λ (ω : Ω₁), M₁ x₁ ω)) P₁).restrict (odp_set_for p i))) _ _ _ _
+    with ⟨t, ht₁, ht₂⟩,
+  rw ht₂,
+  rw ennreal.sub_le_iff_le_add,
+  rw univ_inter,
+  rw measure.map_apply,
   rw measure.sum_apply,
-  rw tsum_congr _,
-  have := union_odp_set_for_eq_univ,
-  have := ennreal.sub_le_iff_le_add.2 (p.odp x₀ x₁ univ),
-  rcases pos_hahn_slice_apply P₁ x₀ x₁ _ M₁ p _ i with ⟨t, ht⟩,
-  unfold pos_hahn_slice,
-  have := p.odp x₀ x₁ s,
-  rw measure.sum_apply,
-  have := measure.sub_apply_finite,
+  convert p.odp x₀ x₁ t,
+  funext,
   rw measure.restrict_apply,
-  rw [tsum_option _ ennreal.summable, add_comm],
-  unfold δusage,
-  refine add_le_add _ _,
-  { exact pos_hahn_none _ _ _ hx _ p hM₁, },
-  { refine tsum_le_tsum _ ennreal.summable ennreal.summable,
-    exact pos_hahn_some _ _ _ hx _ p hM₁,}
+  rw measure.smul_apply,
+  rw measure.map_apply,
+  refl,
+  measurability,
 end
 end
 
@@ -515,9 +539,11 @@ begin
   refine add_le_add _ _,
   { refine add_le_add_left _ _,
     rw union_odp_set_for_eq_univ,
-    -- apply sum_pos_hahn,
+    apply pos_hahn_prop,
     apply hx,
-    apply hM₁ },
+    apply hM₁,
+    apply hε,
+    apply h_ε_for },
   { convert ennreal.mul_le_mul _ _,
     exact (mul_one _).symm,
     exact le_refl _,

@@ -15,6 +15,13 @@ begin
   simp [exp, hx, real.exp_pos]
 end
 
+lemma exp_le_exp (a b : ℝ≥0∞) (h : a ≤ b) : a.exp ≤ b.exp :=
+begin
+  by_cases ha : a = ∞;
+  by_cases hb : b = ∞;
+  simp [exp, ha, hb, h, real.exp_le_exp, real.to_nnreal_le_to_nnreal] at *,
+  exact h
+end
 
 lemma one_le_exp (x : ℝ≥0∞) : 1 ≤ x.exp :=
 begin
