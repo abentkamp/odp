@@ -56,12 +56,12 @@ begin
     have ih' : ∀ (o₁ : O), diff_private_composition (P ^^ n)
         (λ ω, odp_composition₀ 𝒜 o₁ n 0 ωₐ ε δ ω)
         (λ ω, odp_composition₀ 𝒜 o₁ n 1 ωₐ ε δ ω)
-        (ε - εusage ((𝒜 0).choose ωₐ ![] ε δ).odp_mechanism o₁)
-        (δ - ((𝒜 0).choose ωₐ ![] ε δ).odp_mechanism.δ),
+        (ε - εusage ((𝒜 0).choose ωₐ ![] ε δ).odp_partition o₁)
+        (δ - ((𝒜 0).choose ωₐ ![] ε δ).odp_partition.δ),
       { intro o,
         let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ωₐ ![] ε δ,
-        let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o,
-        let  δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_mechanism.δ,
+        let  ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o,
+        let  δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_partition.δ,
         let  𝒜' : adversary P Ωₐ O X := inform 𝒜 o,
         have hε' : ε' < ∞ := lt_of_le_of_lt (ennreal.sub_le_self _ _) hε,
         exact ih 𝒜' ε' δ' hε' },
@@ -81,7 +81,7 @@ begin
           (((𝒜 0).choose ωₐ ![] ε δ).x 0)
           (((𝒜 0).choose ωₐ ![] ε δ).x 1)
           ((𝒜 0).choose ωₐ ![] ε δ).hx (λ x ω, ((𝒜 0).choose ωₐ ![] ε δ).M x ω)
-          ((𝒜 0).choose ωₐ ![] ε δ).odp_mechanism hM
+          ((𝒜 0).choose ωₐ ![] ε δ).odp_partition hM
           (λ o ω, odp_composition₀ 𝒜 o n 0 ωₐ ε δ ω)
           (λ o ω, odp_composition₀ 𝒜 o n 1 ωₐ ε δ ω),
         exact measurable_odp_composition₀ 𝒜 0 ωₐ _ _,

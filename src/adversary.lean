@@ -26,9 +26,9 @@ mechanism and two neighboring databases. The ODP mechanism must not exceed the
 remaining ε-δ-budget. -/
 structure adversary_choice (ε δ : ℝ≥0∞) :=
 (M : X → Ω → O)
-(odp_mechanism : odp_mechanism P M)
-(hδ : odp_mechanism.δ ≤ δ)
-(hε_for : ∀ i, odp_mechanism.ε_for i ≤ ε)
+(odp_partition : odp_partition P M)
+(hδ : odp_partition.δ ≤ δ)
+(hε_for : ∀ i, odp_partition.ε_for i ≤ ε)
 (x : fin 2 → X)
 (hx : neighboring (x 0) (x 1))
 
@@ -49,11 +49,11 @@ structure adversary_n (n : ℕ) :=
 (measurable_ε :
   ∀ {α : Type} [measurable_space α] {ωₐ : α → Ωₐ} {os : α → (fin n → O)} {o : α → O} {ε δ : α → ℝ≥0∞},
   measurable ωₐ → measurable os → measurable o → measurable ε →  measurable δ →
-  measurable (λ (a : α), εusage (choose (ωₐ a) (os a) (ε a) (δ a)).odp_mechanism (o a)))
+  measurable (λ (a : α), εusage (choose (ωₐ a) (os a) (ε a) (δ a)).odp_partition (o a)))
 (measurable_δ :
   ∀ {α : Type} [measurable_space α] {ωₐ : α → Ωₐ} {os : α → (fin n → O)} {ε δ : α → ℝ≥0∞},
   measurable ωₐ → measurable os → measurable ε → measurable δ →
-  measurable (λ (a : α), (choose (ωₐ a) (os a) (ε a) (δ a)).odp_mechanism.δ))
+  measurable (λ (a : α), (choose (ωₐ a) (os a) (ε a) (δ a)).odp_partition.δ))
 
 /-- An adversary is a collection of `adversary_n` structures for each number of
 iterations `n`. -/
@@ -137,9 +137,9 @@ noncomputable def odp_composition :
   -- We sample the chosen meachanism.
   let o := 𝒜_choice.M (𝒜_choice.x bit) (vec_head ωs) in
   -- We calculate the remaining `ε`-budget.
-  let ε' := ε - εusage 𝒜_choice.odp_mechanism o in
+  let ε' := ε - εusage 𝒜_choice.odp_partition o in
   -- We calculate the remaining `δ`-budget.
-  let δ' := δ - 𝒜_choice.odp_mechanism.δ in
+  let δ' := δ - 𝒜_choice.odp_partition.δ in
   -- We inform the adversary about the new output.
   let 𝒜' := inform 𝒜 o in
   -- We return the output and enter the next iteration for the remaining outputs.
@@ -150,8 +150,8 @@ noncomputable def odp_composition :
 but assumes that the current output `o` has already been sampled. -/
 noncomputable def odp_composition₀ (o : O) (n : ℕ) (bit : fin 2) (ωₐ : Ωₐ) (ε δ : ℝ≥0∞) (ω : fin n → Ω) :=
   let 𝒜_choice : adversary_choice P O X ε δ := (𝒜 0).choose ωₐ ![] ε δ in
-  let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_mechanism o in
-  let δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_mechanism.δ in
+  let ε' : ℝ≥0∞ := ε - εusage 𝒜_choice.odp_partition o in
+  let δ' : ℝ≥0∞ := δ - 𝒜_choice.odp_partition.δ in
   let 𝒜' := inform 𝒜 o in
   odp_composition 𝒜' n bit ωₐ ε' δ' ω
 
@@ -184,7 +184,7 @@ begin
       apply (𝒜 m).measurable_x bit hωₐ hos hε hδ,
       { apply measurable.sub hε, --TODO: why can't I rewrite inform_vec_choose here?
         suffices : measurable (λ (a : α),
-          εusage (( 𝒜 m ).choose (ωₐ a) (os a) (ε a) (δ a)).odp_mechanism
+          εusage (( 𝒜 m ).choose (ωₐ a) (os a) (ε a) (δ a)).odp_partition
             (((𝒜 m).choose (ωₐ a) (os a) (ε a) (δ a)).M (((𝒜 m).choose (ωₐ a) (os a) (ε a) (δ a)).x bit) (vec_head (ω a)))),
         { convert this, apply funext, intro i,
           rw inform_vec_choose 𝒜 (os i) },
@@ -193,7 +193,7 @@ begin
         apply (𝒜 m).measurable_x bit hωₐ hos hε hδ, },
       { apply measurable.sub hδ,
         suffices : measurable (λ (a : α),
-          ((𝒜 m).choose (ωₐ a) (os a) (ε a) (δ a)).odp_mechanism.δ),
+          ((𝒜 m).choose (ωₐ a) (os a) (ε a) (δ a)).odp_partition.δ),
         { convert this, apply funext, intro i,
           rw inform_vec_choose 𝒜 (os i) },
         exact (𝒜 m).measurable_δ hωₐ hos hε hδ },
@@ -226,8 +226,8 @@ begin
   apply measurable_odp_composition 𝒜 bit 1 
     (λ _, ωₐ)
     (λ oω : O × (fin n → Ω), ![oω.1])
-    (λ oω : O × (fin n → Ω), ε - εusage ((𝒜 0).choose ωₐ vec_empty ε δ).odp_mechanism oω.fst)
-    (λ oω : O × (fin n → Ω), δ - ((𝒜 0).choose ωₐ vec_empty ε δ).odp_mechanism.δ)
+    (λ oω : O × (fin n → Ω), ε - εusage ((𝒜 0).choose ωₐ vec_empty ε δ).odp_partition oω.fst)
+    (λ oω : O × (fin n → Ω), δ - ((𝒜 0).choose ωₐ vec_empty ε δ).odp_partition.δ)
     (λ oω : O × (fin n → Ω), oω.2),
   { measurability },
   apply measurable.vec_cons,

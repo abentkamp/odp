@@ -53,7 +53,7 @@ fulfilled.
 
 The partition is realized by a function `partition` that assigns to every
 possible output an index `i`. -/
-structure odp_mechanism :=
+structure odp_partition :=
 (δ : ℝ≥0∞)
 (index : Type)
 [encodable : encodable index]
@@ -69,17 +69,17 @@ structure odp_mechanism :=
 variables {P} {M}
 
 /-- The ε-usage for a certain output id the ε associated with its partition. -/
-def εusage (p : odp_mechanism P M) (o : O) := p.ε_for (p.partition o)
+def εusage (p : odp_partition P M) (o : O) := p.ε_for (p.partition o)
 
 /-- The set of outputs associated with an index `i` -/
-def odp_set_for (p : odp_mechanism P M) : p.index → set O :=
+def odp_set_for (p : odp_partition P M) : p.index → set O :=
 λ i, {o : O | p.partition o = i}
 
-lemma partition_eq_of_mem_odp_set_for {p : odp_mechanism P M} {i : p.index}
+lemma partition_eq_of_mem_odp_set_for {p : odp_partition P M} {i : p.index}
   {o : O} (ho: o ∈ odp_set_for p i) :
   p.partition o = i := ho
 
-lemma pairwise_disjoint_on_odp_set_for {p : odp_mechanism P M} :
+lemma pairwise_disjoint_on_odp_set_for {p : odp_partition P M} :
   pairwise (disjoint on odp_set_for p) :=
 begin
   rintros i j hij a ⟨ha₁, ha₂⟩,
@@ -89,7 +89,7 @@ begin
   contradiction,
 end
 
-lemma εusage_eq_ε_for {p : odp_mechanism P M} {i : p.index}
+lemma εusage_eq_ε_for {p : odp_partition P M} {i : p.index}
   {o : O} (ho : o ∈ odp_set_for p i) :
   εusage p o = p.ε_for i :=
 begin
@@ -97,21 +97,21 @@ begin
   refl,
 end
 
-lemma mem_odp_set_for_odp_index (p : odp_mechanism P M) (o : O) :
+lemma mem_odp_set_for_odp_index (p : odp_partition P M) (o : O) :
   o ∈ odp_set_for p (p.partition o) :=
 by simp [odp_set_for]
 
 @[measurability]
-lemma measurable_set_odp_set_for (p : odp_mechanism P M) (i : p.index) :
+lemma measurable_set_odp_set_for (p : odp_partition P M) (i : p.index) :
   measurable_set (odp_set_for p i) :=
 p.measurable_partition i
 
 /-- Since the type of indices is countable, we can assume that all its subsets
 are measurable. -/
-instance (p : odp_mechanism P M) : measurable_space p.index := ⊤
+instance (p : odp_partition P M) : measurable_space p.index := ⊤
 
 @[measurability]
-lemma measurable_partition (p : odp_mechanism P M) :
+lemma measurable_partition (p : odp_partition P M) :
   measurable (p.partition) :=
 begin
   haveI : encodable p.index := p.encodable,
@@ -121,7 +121,7 @@ begin
   measurability
 end
 
-lemma union_odp_set_for_eq_univ (p : odp_mechanism P M) : 
+lemma union_odp_set_for_eq_univ (p : odp_partition P M) : 
   (⋃ i, odp_set_for p i) = set.univ :=
 begin
   apply set.eq_univ_of_forall,
@@ -131,7 +131,7 @@ begin
   apply mem_odp_set_for_odp_index
 end
 
-lemma split_set (p : odp_mechanism P M) (s : set (O × O')) :
+lemma split_set (p : odp_partition P M) (s : set (O × O')) :
   s = ⋃ (i : p.index), s ∩ (odp_set_for p i).prod set.univ :=
 calc s = s ∩ (set.prod set.univ set.univ) : by simp
 ... = s ∩ ((set.Union (λ i, odp_set_for p i)).prod set.univ) :

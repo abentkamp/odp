@@ -22,7 +22,7 @@ variables {O₁ O₂ : Type} [measurable_space O₁] [measurable_space O₂]
 variables {X : Type} [database_type X] (x x₀ x₁ : X) (hx : neighboring x₀ x₁)
 
 /- `M₁` is a ODP mechanism -/
-variables (M₁ : X → Ω₁ → O₁) (p : odp_mechanism P₁ M₁)
+variables (M₁ : X → Ω₁ → O₁) (p : odp_partition P₁ M₁)
 variables (hM₁ : ∀ x, measurable (M₁ x))
 
 /- `M₂₀` and `M₂₁` are random variables depending on the output of `M₁` -/
