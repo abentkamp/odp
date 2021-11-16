@@ -47,6 +47,11 @@ def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
+/-- Subset differential privacy -/
+def subset_diff_private (r : set O) :=
+  ∀ (x y : X) (s : set O), s ⊆ r → measurable_set s → neighboring x y →
+  P {ω : Ω | M x ω ∈ s} ≤ exp ε * P {ω : Ω | M y ω ∈ s} + δ
+
 /-- An ODP partition is a partition of the set of outputs `O` of a mechanism
 into measurable subsets such that the `odp` inequality below is fulfilled.
 
@@ -60,10 +65,9 @@ structure odp_partition :=
 (measurable_partition : ∀ i, measurable_set {o : O | partition o = i})
 (ε_for : index → ℝ≥0∞)
 (ε_for_lt_infty : ∀ i, ε_for i < ∞)
-(odp : ∀ (x y : X) (s : set O), P {ω : Ω | M x ω ∈ s} 
-  ≤ δ + ∑' i : index, exp (ε_for i) * P {ω : Ω | M y ω ∈ s ∩ {o : O | partition o = i}})
-
--- TODO: Example instance
+(odp : ∀ (x y : X) (s : set O), measurable_set s → neighboring x y →
+  P {ω : Ω | M x ω ∈ s} 
+    ≤ δ + ∑' i : index, exp (ε_for i) * P {ω : Ω | M y ω ∈ s ∩ {o : O | partition o = i}})
 
 variables {P} {M}
 
@@ -158,3 +162,48 @@ begin
   convert this,
   exact equiv.image_eq_preimage (vec_cons.equiv n).symm s,
 end
+
+/-- If a mechanism is subset differential private on each element of a parition,
+this partition is an ODP partition when summing up the deltas. (Lemma 6) -/
+lemma odp_partition_of_subset_dp {ι : Type} [encodable ι]
+  (p : O → ι) (hp : ∀ i, measurable_set {o | p o = i}) 
+  (ε : ι → ℝ≥0∞) (δ : ι → ℝ≥0∞) (hε : ∀ i, ε i < ∞)
+  (hM : ∀ x, measurable (M x))
+  (h : ∀ i, subset_diff_private P M (ε i) (δ i) {o | p o = i}) :
+  odp_partition P M :=
+{ index := ι,
+  partition := p,
+  measurable_partition := hp,
+  ε_for := ε,
+  ε_for_lt_infty := hε,
+  δ := ∑' i, δ i,
+  odp := begin
+    intros x y s hs hxy,
+    calc P {ω : Ω | M x ω ∈ s} 
+        = ∑' (i : ι), P ((λ ω : Ω, M x ω) ⁻¹' (s ∩ p ⁻¹' {i})) :
+          begin 
+            rw [← measure_Union, ← set.preimage_Union, ← set.inter_Union, ← set.bUnion_univ,
+              set.bUnion_preimage_singleton, set.preimage_univ, set.inter_univ],
+            refl,
+            { rintros i j hij ω ⟨hω₁, hω₂⟩,
+              have h₁ : p (M x ω) ∈ {i} := @set.mem_of_mem_inter_right _ (M x ω) s (p ⁻¹' {i}) hω₁,
+              have h₂ : p (M x ω) ∈ {j} := @set.mem_of_mem_inter_right _ (M x ω) s (p ⁻¹' {j}) hω₂,
+              rw set.mem_singleton_iff at *,
+              rw [←h₁, ←h₂] at hij,
+              contradiction },
+            { measurability }
+          end
+    ... ≤ ∑' (i : ι), ((ε i).exp * P {ω : Ω | M y ω ∈ s ∩ {o : O | p o = i}} + δ i) :
+          begin
+            refine tsum_mono ennreal.summable ennreal.summable _,
+            intro i,
+            apply h,
+            apply set.inter_subset_right,
+            { measurability },
+            exact hxy
+          end
+    ... = ∑' (i : ι), δ i + ∑' (i : ι), (ε i).exp * P {ω : Ω | M y ω ∈ s ∩ {o : O | p o = i}} :
+          begin
+            rw [tsum_add ennreal.summable ennreal.summable, add_comm]
+          end
+  end}
