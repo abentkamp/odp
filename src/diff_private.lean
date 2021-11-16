@@ -47,9 +47,8 @@ def diff_private_composition :=
   ∀ (s : set O) (hs : measurable_set s),
   P {ω : Ω | M₀ ω ∈ s} ≤ exp ε * P {ω : Ω | M₁ ω ∈ s} + δ
 
-/-- An ODP mechanism is a mechanism such that there is a partition of the set of
-outputs `O` into measurable subsets such that the `odp` inequality below is
-fulfilled.
+/-- An ODP partition is a partition of the set of outputs `O` of a mechanism
+into measurable subsets such that the `odp` inequality below is fulfilled.
 
 The partition is realized by a function `partition` that assigns to every
 possible output an index `i`. -/
