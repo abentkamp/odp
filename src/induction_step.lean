@@ -300,7 +300,6 @@ lemma pos_hahn_prop (hε : ε < ∞) (h_ε_for : ∀ i, p.ε_for i ≤ ε) :
 begin
   /- This proof is a bit complicated because we have the hahn decomposition theorem only for finite measures
   and we need to prove the involved measures to be finite. -/
-  have := p.odp,
   unfold pos_hahn,
   haveI : finite_measure (measure.map (λ (ω : Ω₁), M₁ x₀ ω) P₁) :=
   begin
@@ -368,7 +367,7 @@ begin
   rw univ_inter,
   rw measure.map_apply,
   rw measure.sum_apply,
-  convert p.odp x₀ x₁ t,
+  convert p.odp x₀ x₁ t _ _,
   funext,
   rw measure.restrict_apply,
   rw measure.smul_apply,
