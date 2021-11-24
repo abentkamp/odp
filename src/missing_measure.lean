@@ -34,7 +34,6 @@ begin
   exact hf₂ ⟨k, nat.lt_of_succ_lt_succ hk⟩
 end
 
--- TODO: move
 def fin.cases_last {n : ℕ}
   {C : fin (n.succ) → Sort*}
   (Hi : Π i : fin n, C ⟨i.1, nat.lt_succ_of_lt i.2⟩)

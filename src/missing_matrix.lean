@@ -96,11 +96,8 @@ begin
     fin.cast_add, fin.cast_le, fin.cast_lt]
 end
 
-
 /-- `vec_snoc t h` appends an entry `h` to a vector `t`.
-
-The inverse functions are `vec_butlast` and `vec_last`.
--/
+The inverse functions are `vec_butlast` and `vec_last`. -/
 def vec_snoc {n : ℕ} (t : fin n → α) (h : α) : fin n.succ → α :=
 fin.snoc t h
 

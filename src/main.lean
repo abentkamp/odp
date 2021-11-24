@@ -1,6 +1,6 @@
 import .induction_step data.set.basic .adversary
 
-/- This file contains the main theorem. -/
+/- This file contains the main theorem. (Theorem 7) -/
 
 open measure_theory ennreal database_type matrix
 open_locale ennreal
@@ -115,9 +115,9 @@ begin
    } }
 end
 
-/-- Main Theorem: For every adversary `𝒜` and for every set of views `s` of
-  `𝒜` returned by `odp_composition`, we have that 
-  `Pr(v⁰ ∈ s) ≤ exp ε * Pr(v¹ ∈ s) + δ`.
+/-- Main Theorem (Theorem 7): For every adversary `𝒜` and for every set of
+  views `s` of `𝒜` returned by `odp_composition`, we have that `Pr(v⁰ ∈ s) ≤
+  exp ε * Pr(v¹ ∈ s) + δ`.
 
   We use `P` as the probablity measure on sample space `Ω` for each of the `n`
   mechanisms and `Pₐ` as the probablity measure on sample space `Ωₐ` for the

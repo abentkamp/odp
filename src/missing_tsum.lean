@@ -1,10 +1,8 @@
 import topology.algebra.infinite_sum
 import topology.instances.ennreal
 
-
 open_locale big_operators
 open_locale topological_space classical
-
 
 lemma tsum_eq_zero {α β : Type*} [add_comm_monoid β] [topological_space β] [t2_space β] :
   ∀ (f : α → β), (∀ a, f a = 0) → ∑' a, f a = 0 :=
@@ -12,7 +10,6 @@ begin
   intros f hf,
   simp [hf]
 end
-
 
 section sum
 variables {α β γ : Type*} [add_comm_monoid α] [topological_space α] [has_continuous_add α] [t2_space α] {f : β ⊕ γ → α} {a b : α}

@@ -2,7 +2,7 @@ import .diff_private .missing_integration .missing_unsigned_hahn .missing_pairwi
 import .missing_finset .missing_measure .missing_tsum .missing_tsum_ennreal
 import topology.instances.ennreal
 /-
-This file contains the crucial part of the induction step of the main theorem.
+This file contains the crucial lemma of the induction step of the main theorem.
 -/
 
 open measure_theory ennreal database_type set
@@ -389,7 +389,7 @@ begin
 end
 
 include hx hM₁ hε h_measurable_M₂₀ h_measurable_M₂₁
-/-- This is the crucial part of the induction step of the main theorem. -/
+/-- This is the crucial lemma for the induction step of the main theorem. (Lemma 17) -/
 lemma induction_step
   (h_ε_for : ∀ i, p.ε_for i ≤ ε)
   (hδ : p.δ ≤ δ)
