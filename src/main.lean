@@ -1,5 +1,8 @@
+/-
+Copyright (c) 2022 Alexander Bentkamp. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 import .induction_step data.set.basic .adversary
-
 /- This file contains the main theorem. (Theorem 7) -/
 
 open measure_theory ennreal database_type matrix

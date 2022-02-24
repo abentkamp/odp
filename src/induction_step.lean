@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2022 Alexander Bentkamp. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 import .diff_private .missing_integration .missing_unsigned_hahn .missing_pairwise_disjoint 
 import .missing_finset .missing_measure .missing_tsum .missing_tsum_ennreal
 import topology.instances.ennreal

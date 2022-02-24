@@ -1,6 +1,9 @@
+/-
+Copyright (c) 2022 Alexander Bentkamp. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 import measure_theory.constructions.prod
 import .missing_ennreal .missing_matrix .missing_measure
-
 /-
 This file defines differential privacy and output differential privacy.
 -/
