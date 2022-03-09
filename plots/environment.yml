@@ -1,0 +1,7 @@
+name: odp
+dependencies:
+  - python=3.9
+  - scipy=1.7.3
+  - numpy=1.21.2
+  - matplotlib=3.5.1
+  - jupyterlab=3.2.9
