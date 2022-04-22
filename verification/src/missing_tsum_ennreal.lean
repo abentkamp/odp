@@ -4,9 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import topology.instances.ennreal
 
--- TODO: This file may not be needed, but the lemmas might still be good to add
--- to mathlib.
-
 open classical set filter metric
 open_locale classical topological_space ennreal nnreal big_operators filter
 
