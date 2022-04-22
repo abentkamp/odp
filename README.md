@@ -4,7 +4,9 @@ This repository contains the code for the paper 'Privacy accounting economics: I
 
 ## Proof Verification
 
-The `verification` directory contains our Lean formalization of the proof of our ODP composition theorem.
+The `verification` directory contains our Lean formalization of the proof of our ODP composition theorem. The main theorem (Theorem 7) is can be found in the file `main.lean`. The file `diff_private.lean` defines differential privacy and output differential privacy. The file `adversary.lean` defines the role of the adversary and the ODP algorithm. The file `induction_step.lean` contains the crucial lemma (Lemma 17) for the induction step of the main theorem. The files prefixed by `missing` contain required lemmas that were missing in Lean's library, but are not specific to the ODP composition theorem.
+
+### Setup:
 
 * Install Lean: https://leanprover-community.github.io/get_started.html
 * Run `leanproject get-mathlib-cache` in the `verification` directory
