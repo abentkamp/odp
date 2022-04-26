@@ -1,6 +1,7 @@
 # Privacy accounting economics
 
 This repository contains the code for the paper 'Privacy accounting economics: Improving differential privacy composition via a posteriori bounds', which will be presented at PETS 2022.
+
 We provide a virtual machine with all dependencies installed and the code of this respository in the state of commit `3835ba52692ceb2187a6f22043dd613c8e7e24ed` at https://doi.org/10.6084/m9.figshare.19330649
 
 ## Proof Verification
